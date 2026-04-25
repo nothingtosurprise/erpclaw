@@ -24,7 +24,7 @@ import sys
 from typing import Optional
 
 # ---------------------------------------------------------------------------
-# Domain → db_query.py path mapping (relative to src/)
+# Domain → db_query.py path mapping (relative to source/)
 # ---------------------------------------------------------------------------
 
 # Maps logical domain names to the relative path (from src_root) of the
@@ -1169,7 +1169,7 @@ def get_domain_actions(src_root: str, domain: str) -> set[str]:
     """Get the set of implemented action names for a domain.
 
     Args:
-        src_root: Path to the project src/ directory.
+        src_root: Path to the project source/ directory.
         domain: Domain name (e.g., "selling", "buying").
 
     Returns:
@@ -1197,7 +1197,7 @@ def check_feature_completeness(
     db_query.py for existing actions and compares against EXPECTED_FEATURES.
 
     Args:
-        src_root: Path to the project src/ directory.
+        src_root: Path to the project source/ directory.
         domain: Optional domain to check. If None, checks all domains.
 
     Returns:
@@ -1262,7 +1262,7 @@ def get_domain_score(src_root: str, domain: str) -> dict:
     """Calculate feature completeness score for a specific domain.
 
     Args:
-        src_root: Path to the project src/ directory.
+        src_root: Path to the project source/ directory.
         domain: Domain name (e.g., "selling").
 
     Returns:

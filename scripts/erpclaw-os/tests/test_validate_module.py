@@ -45,12 +45,12 @@ from constitution import ARTICLES, get_static_articles, get_runtime_articles, ge
 # Paths to real modules for integration testing
 # ---------------------------------------------------------------------------
 
-# tests/ -> erpclaw-os/ -> scripts/ -> erpclaw/ -> src/ -> project-root/
+# tests/ -> erpclaw-os/ -> scripts/ -> erpclaw/ -> source/ -> project-root/
 _PROJECT_ROOT = OS_DIR
 for _ in range(4):
     _PROJECT_ROOT = os.path.dirname(_PROJECT_ROOT)
 
-SRC_ROOT = os.path.join(_PROJECT_ROOT, "src")
+SRC_ROOT = os.path.join(_PROJECT_ROOT, "source")
 LEGALCLAW_PATH = os.path.join(SRC_ROOT, "legalclaw")
 RETAILCLAW_PATH = os.path.join(SRC_ROOT, "retailclaw")
 HEALTHCLAW_VET_PATH = os.path.join(SRC_ROOT, "healthclaw", "healthclaw-vet")
@@ -142,8 +142,8 @@ class TestHelpers:
         assert cols[2]["type"] == "REAL"
 
     def test_derive_module_name(self):
-        assert _derive_module_name("/path/to/src/legalclaw") == "legalclaw"
-        assert _derive_module_name("/path/to/src/healthclaw/healthclaw-vet") == "healthclaw-vet"
+        assert _derive_module_name("/path/to/source/legalclaw") == "legalclaw"
+        assert _derive_module_name("/path/to/source/healthclaw/healthclaw-vet") == "healthclaw-vet"
 
     def test_extract_action_names_from_skill_md(self):
         skill_md = textwrap.dedent("""\
@@ -486,7 +486,7 @@ class TestArticle10:
     def test_ssn_pattern_detected(self, tmp_path):
         module = tmp_path / "ssnclaw"
         module.mkdir()
-        (module / "data.py").write_text('ssn = "123-45-6789"\n')
+        (module / "data.py").write_text('ssn = "123-45-6789"\n')  # fake test fixture for SEC-03
         result = _check_article_10(str(module))
         assert result["result"] == "fail"
         assert any("SSN" in v.get("pattern", "") for v in result["violations"])
@@ -656,7 +656,7 @@ class TestTableOwnershipRegistry:
     def test_finds_tables_from_multiple_modules(self, src_root):
         """Registry should find tables from multiple init_db.py files."""
         if not os.path.isdir(src_root):
-            pytest.skip("src/ directory not found")
+            pytest.skip("source/ directory not found")
         registry = build_table_ownership_registry(src_root)
 
         # Should have a substantial number of tables
@@ -668,7 +668,7 @@ class TestTableOwnershipRegistry:
     def test_core_tables_owned_by_erpclaw(self, src_root):
         """Core tables should be owned by erpclaw."""
         if not os.path.isdir(src_root):
-            pytest.skip("src/ directory not found")
+            pytest.skip("source/ directory not found")
         registry = build_table_ownership_registry(src_root)
 
         core_tables = ["company", "account", "gl_entry", "customer", "sales_order"]
@@ -681,7 +681,7 @@ class TestTableOwnershipRegistry:
     def test_legalclaw_tables_owned_by_legalclaw(self, src_root):
         """LegalClaw tables should be owned by legalclaw."""
         if not os.path.isdir(src_root):
-            pytest.skip("src/ directory not found")
+            pytest.skip("source/ directory not found")
         registry = build_table_ownership_registry(src_root)
 
         legal_tables = ["legalclaw_matter", "legalclaw_time_entry", "legalclaw_invoice"]
@@ -694,7 +694,7 @@ class TestTableOwnershipRegistry:
     def test_retailclaw_tables_owned_by_retailclaw(self, src_root):
         """RetailClaw tables should be owned by retailclaw."""
         if not os.path.isdir(src_root):
-            pytest.skip("src/ directory not found")
+            pytest.skip("source/ directory not found")
         registry = build_table_ownership_registry(src_root)
 
         retail_tables = ["retailclaw_promotion", "retailclaw_coupon", "retailclaw_loyalty_program"]

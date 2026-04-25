@@ -394,15 +394,15 @@ def violation_module(tmp_path):
 
 @pytest.fixture
 def src_root():
-    """Return the path to the real src/ directory for cross-module testing."""
-    # Navigate from this test file up to src/
+    """Return the path to the real source/ directory for cross-module testing."""
+    # Navigate from this test file up to source/
     this_file = os.path.abspath(__file__)
-    # tests/ -> erpclaw-os/ -> scripts/ -> erpclaw/ -> src/
+    # tests/ -> erpclaw-os/ -> scripts/ -> erpclaw/ -> source/
     path = os.path.dirname(this_file)
     for _ in range(4):
         path = os.path.dirname(path)
-    src_path = os.path.join(path, "src")
+    src_path = os.path.join(path, "source")
     if os.path.isdir(src_path):
         return src_path
     # Fallback: try standard project structure
-    return os.path.join(os.path.dirname(path), "src")
+    return os.path.join(os.path.dirname(path), "source")

@@ -1,16 +1,16 @@
 {
-  "version": "3.3.0",
-  "generated": "2026-03-09",
+  "version": "3.4.1",
+  "generated": "2026-03-31",
   "modules": {
     "erpclaw": {
       "display_name": "ERPClaw Core",
-      "description": "Complete ERP foundation: accounting, inventory, selling, buying, billing, payments, tax, journals, GL, reports, and setup. 371 actions across 12 domains.",
+      "description": "Complete ERP foundation: accounting, inventory, selling, buying, billing, payments, tax, journals, GL, HR, payroll, reports, and setup. 466 actions across 15 domains.",
       "category": "core",
       "github": "avansaber/erpclaw",
       "version": "2.0.0",
       "requires": [],
       "has_init_db": false,
-      "action_count": 371,
+      "action_count": 466,
       "tags": [
         "erp",
         "accounting",
@@ -65,7 +65,7 @@
     },
     "erpclaw-ops": {
       "display_name": "ERPClaw Operations",
-      "description": "Manufacturing, advanced manufacturing, projects, assets, quality, and support. BOMs, work orders, MRP, routing, tasks, timesheets, depreciation, inspections, SLAs. 121 actions across 6 domains.",
+      "description": "Manufacturing, advanced manufacturing, projects, assets, quality, and support. BOMs, work orders, MRP, routing, tasks, timesheets, depreciation, inspections, SLAs. 126 actions across 6 domains.",
       "category": "expansion",
       "github": "avansaber/erpclaw-addons",
       "version": "2.0.0",
@@ -73,7 +73,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 121,
+      "action_count": 126,
       "tags": [
         "manufacturing",
         "bom",
@@ -274,7 +274,7 @@
     },
     "erpclaw-loans": {
       "display_name": "ERPClaw Loans",
-      "description": "Loan management: loan types, applications, disbursements, repayment schedules, and GL integration. 20 actions.",
+      "description": "Loan management: loan types, applications, disbursements, repayment schedules, and GL integration. 25 actions.",
       "category": "infrastructure",
       "github": "avansaber/erpclaw-addons",
       "version": "1.0.0",
@@ -282,7 +282,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 20,
+      "action_count": 25,
       "tags": [
         "loans",
         "lending",
@@ -296,7 +296,7 @@
     },
     "erpclaw-logistics": {
       "display_name": "ERPClaw Logistics",
-      "description": "Supply chain logistics: shipments, carriers, tracking, routes, freight charges, and delivery scheduling. 33 actions.",
+      "description": "Supply chain logistics: shipments, carriers, tracking, routes, freight charges, and delivery scheduling. 34 actions.",
       "category": "infrastructure",
       "github": "avansaber/erpclaw-addons",
       "version": "1.0.0",
@@ -304,7 +304,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 33,
+      "action_count": 34,
       "tags": [
         "logistics",
         "shipments",
@@ -363,7 +363,7 @@
     },
     "erpclaw-pos": {
       "display_name": "ERPClaw POS",
-      "description": "Point of sale: registers, shifts, transactions, cash management, returns, and end-of-day reconciliation. 29 actions.",
+      "description": "Point of sale: registers, shifts, transactions, cash management, returns, and end-of-day reconciliation. 34 actions.",
       "category": "infrastructure",
       "github": "avansaber/erpclaw-addons",
       "version": "1.0.0",
@@ -371,7 +371,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 29,
+      "action_count": 34,
       "tags": [
         "pos",
         "point-of-sale",
@@ -525,7 +525,7 @@
     },
     "healthclaw": {
       "display_name": "HealthClaw",
-      "description": "Healthcare practice management: patients, providers, appointments, clinical notes, prescriptions, lab orders, billing/claims, insurance verification, and compliance (HIPAA). 140 actions across 8 domains.",
+      "description": "Healthcare practice management: patients, providers, appointments, clinical notes, prescriptions, lab orders, billing/claims, insurance verification, and compliance (HIPAA). 231 actions across 8 domains.",
       "category": "vertical",
       "github": "avansaber/healthclaw",
       "version": "2.0.0",
@@ -533,7 +533,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 140,
+      "action_count": 231,
       "tags": [
         "healthcare",
         "patients",
@@ -553,7 +553,7 @@
     },
     "educlaw": {
       "display_name": "EduClaw",
-      "description": "Education management: students, academics, grading, attendance, staff, fees, enrollment, and communications. K-12 and higher education. 113 actions across 8 domains.",
+      "description": "Education management: students, academics, grading, attendance, staff, fees, enrollment, and communications. K-12 and higher education. 177 actions across 8 domains.",
       "category": "vertical",
       "github": "avansaber/educlaw",
       "version": "1.0.0",
@@ -561,7 +561,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 113,
+      "action_count": 177,
       "tags": [
         "education",
         "students",
@@ -580,7 +580,7 @@
     },
     "propertyclaw": {
       "display_name": "PropertyClaw",
-      "description": "Property management: properties, units, leases, tenants, maintenance requests, and property accounting. 67 actions across 5 domains.",
+      "description": "Property management: properties, units, leases, tenants, maintenance requests, and property accounting. 103 actions across 5 domains.",
       "category": "vertical",
       "github": "avansaber/propertyclaw",
       "version": "1.0.0",
@@ -588,7 +588,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 67,
+      "action_count": 103,
       "tags": [
         "property",
         "real-estate",
@@ -603,7 +603,7 @@
     },
     "agricultureclaw": {
       "display_name": "AgricultureClaw",
-      "description": "Agricultural operations management: farms, fields, crops, livestock, equipment, harvest tracking, and agricultural accounting. 63 actions.",
+      "description": "Agricultural operations management: farms, fields, crops, livestock, equipment, harvest tracking, and agricultural accounting. 67 actions.",
       "category": "vertical",
       "github": "avansaber/agricultureclaw",
       "version": "1.0.0",
@@ -611,7 +611,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 63,
+      "action_count": 67,
       "tags": [
         "agriculture",
         "farming",
@@ -647,7 +647,7 @@
     },
     "constructclaw": {
       "display_name": "ConstructClaw",
-      "description": "Construction project management: projects, contracts, budgets, cost tracking, subcontractors, RFIs, submittals, change orders, and safety compliance. 114 actions.",
+      "description": "Construction project management: projects, contracts, budgets, cost tracking, subcontractors, RFIs, submittals, change orders, and safety compliance. 160 actions.",
       "category": "vertical",
       "github": "avansaber/constructclaw",
       "version": "1.0.0",
@@ -655,7 +655,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 114,
+      "action_count": 160,
       "tags": [
         "construction",
         "projects",
@@ -671,7 +671,7 @@
     },
     "foodclaw": {
       "display_name": "FoodClaw",
-      "description": "Food service and restaurant management: menus, recipes, ingredients, orders, kitchen operations, inventory, and food safety compliance. 71 actions.",
+      "description": "Food service and restaurant management: menus, recipes, ingredients, orders, kitchen operations, inventory, and food safety compliance. 80 actions.",
       "category": "vertical",
       "github": "avansaber/foodclaw",
       "version": "1.0.0",
@@ -679,7 +679,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 71,
+      "action_count": 80,
       "tags": [
         "food-service",
         "restaurant",
@@ -717,7 +717,7 @@
     },
     "legalclaw": {
       "display_name": "LegalClaw",
-      "description": "Legal practice management: matters, clients, time tracking, billing, documents, court dates, conflicts checks, and trust accounting. 69 actions.",
+      "description": "Legal practice management: matters, clients, time tracking, billing, documents, court dates, conflicts checks, and trust accounting. 100 actions.",
       "category": "vertical",
       "github": "avansaber/legalclaw",
       "version": "1.0.0",
@@ -725,7 +725,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 69,
+      "action_count": 100,
       "tags": [
         "legal",
         "law-firm",
@@ -741,7 +741,7 @@
     },
     "nonprofitclaw": {
       "display_name": "NonprofitClaw",
-      "description": "Nonprofit management: donors, donations, campaigns, grants, programs, volunteers, events, and fund accounting. 58 actions.",
+      "description": "Nonprofit management: donors, donations, campaigns, grants, programs, volunteers, events, and fund accounting. 63 actions.",
       "category": "vertical",
       "github": "avansaber/nonprofitclaw",
       "version": "1.0.0",
@@ -749,7 +749,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 58,
+      "action_count": 63,
       "tags": [
         "nonprofit",
         "donors",
@@ -764,7 +764,7 @@
     },
     "retailclaw": {
       "display_name": "RetailClaw",
-      "description": "Retail operations management: stores, products, pricing, promotions, loyalty programs, POS integration, and multi-channel selling. 57 actions.",
+      "description": "Retail operations management: stores, products, pricing, promotions, loyalty programs, POS integration, and multi-channel selling. 88 actions.",
       "category": "vertical",
       "github": "avansaber/retailclaw",
       "version": "1.0.0",
@@ -772,7 +772,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 57,
+      "action_count": 88,
       "tags": [
         "retail",
         "stores",
@@ -873,7 +873,7 @@
     },
     "educlaw-finaid": {
       "display_name": "EduClaw Financial Aid",
-      "description": "Financial aid management: FAFSA processing, aid packages, scholarships, grants, work-study, satisfactory academic progress, and Title IV compliance. 117 actions.",
+      "description": "Financial aid management: FAFSA processing, aid packages, scholarships, grants, work-study, satisfactory academic progress, and Title IV compliance. 122 actions.",
       "category": "sub-vertical",
       "github": "avansaber/educlaw",
       "version": "1.0.0",
@@ -882,7 +882,7 @@
         "educlaw"
       ],
       "has_init_db": true,
-      "action_count": 117,
+      "action_count": 122,
       "tags": [
         "financial-aid",
         "fafsa",
@@ -921,7 +921,7 @@
     },
     "educlaw-scheduling": {
       "display_name": "EduClaw Scheduling",
-      "description": "Academic scheduling: course scheduling, room assignments, instructor availability, conflict detection, and timetable generation. 57 actions.",
+      "description": "Academic scheduling: course scheduling, room assignments, instructor availability, conflict detection, and timetable generation. 58 actions.",
       "category": "sub-vertical",
       "github": "avansaber/educlaw",
       "version": "1.0.0",
@@ -930,7 +930,7 @@
         "educlaw"
       ],
       "has_init_db": true,
-      "action_count": 57,
+      "action_count": 58,
       "tags": [
         "scheduling",
         "timetable",
@@ -990,7 +990,7 @@
     },
     "educlaw-highered": {
       "display_name": "EduClaw Higher Education",
-      "description": "Higher education management: degree programs, credit hours, academic advising, research grants, faculty workload, and accreditation. 60 actions.",
+      "description": "Higher education management: degree programs, credit hours, academic advising, research grants, faculty workload, and accreditation. 62 actions.",
       "category": "sub-vertical",
       "github": "avansaber/educlaw",
       "version": "1.0.0",
@@ -999,7 +999,7 @@
         "educlaw"
       ],
       "has_init_db": true,
-      "action_count": 60,
+      "action_count": 62,
       "tags": [
         "higher-education",
         "degree-programs",
@@ -1043,7 +1043,7 @@
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 62,
+      "action_count": 67,
       "tags": [
         "stripe",
         "payments",
@@ -1054,30 +1054,92 @@
     },
     "erpclaw-integrations-shopify": {
       "display_name": "ERPClaw Shopify Integration",
-      "description": "Deep native Shopify integration: order sync, payout reconciliation, GL posting, COGS tracking, gift card deferred revenue",
+      "description": "Deep native Shopify integration: order sync, payout reconciliation, GL posting, COGS tracking, gift card deferred revenue, App Store OAuth pairing, status mirror, SSE command delivery, cross-platform push daemon, GDPR webhooks",
       "category": "expansion",
       "github": "avansaber/erpclaw-addons",
       "subdir": "erpclaw-integrations-shopify",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "requires": [
         "erpclaw"
       ],
       "has_init_db": true,
-      "action_count": 58,
+      "action_count": 66,
       "tags": [
         "shopify",
         "e-commerce",
         "reconciliation",
         "payout",
         "orders",
-        "inventory"
+        "inventory",
+        "oauth",
+        "app-store",
+        "gdpr"
       ],
       "keywords": [
         "shopify",
         "e-commerce",
         "online store",
         "payout reconciliation",
-        "shopify payments"
+        "shopify payments",
+        "shopify app store",
+        "oauth pairing"
+      ]
+    },
+    "groomingclaw": {
+      "display_name": "Pet Grooming",
+      "description": "Pet grooming business management: appointments, clients, pets, services, and billing.",
+      "category": "vertical",
+      "github": "avansaber/groomingclaw",
+      "version": "1.0.0",
+      "requires": [
+        "erpclaw"
+      ],
+      "has_init_db": true,
+      "action_count": 13,
+      "tags": [
+        "grooming",
+        "pets",
+        "appointments",
+        "salon",
+        "veterinary"
+      ]
+    },
+    "storageclaw": {
+      "display_name": "Self-Storage",
+      "description": "Self-storage facility management: units, tenants, leases, access, and billing.",
+      "category": "vertical",
+      "github": "avansaber/storageclaw",
+      "version": "1.0.0",
+      "requires": [
+        "erpclaw"
+      ],
+      "has_init_db": true,
+      "action_count": 18,
+      "tags": [
+        "storage",
+        "units",
+        "tenants",
+        "leases",
+        "facility"
+      ]
+    },
+    "tattooclaw": {
+      "display_name": "Tattoo Parlor",
+      "description": "Tattoo parlor management: artists, appointments, designs, consent forms, and billing.",
+      "category": "vertical",
+      "github": "avansaber/tattooclaw",
+      "version": "1.0.0",
+      "requires": [
+        "erpclaw"
+      ],
+      "has_init_db": true,
+      "action_count": 18,
+      "tags": [
+        "tattoo",
+        "parlor",
+        "artists",
+        "appointments",
+        "body art"
       ]
     }
   }

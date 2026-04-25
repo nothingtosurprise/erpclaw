@@ -29,7 +29,7 @@ from feature_matrix import (
     handle_list_feature_matrix,
 )
 
-# Path to real src/ directory for integration-style tests
+# Path to real source/ directory for integration-style tests
 SRC_ROOT = os.path.abspath(os.path.join(OS_DIR, "..", "..", ".."))
 
 
@@ -695,7 +695,7 @@ class TestActionHandlers:
 
 
 # ---------------------------------------------------------------------------
-# Test: Integration with real src/ directory
+# Test: Integration with real source/ directory
 # ---------------------------------------------------------------------------
 
 class TestRealSrcIntegration:
@@ -707,7 +707,7 @@ class TestRealSrcIntegration:
 
     @pytest.mark.skipif(
         not os.path.isdir(os.path.join(SRC_ROOT, "erpclaw")),
-        reason="Real src/ directory not available",
+        reason="Real source/ directory not available",
     )
     def test_real_selling_has_quotation_crud(self):
         """Real codebase: selling should have quotation CRUD."""
@@ -717,7 +717,7 @@ class TestRealSrcIntegration:
 
     @pytest.mark.skipif(
         not os.path.isdir(os.path.join(SRC_ROOT, "erpclaw")),
-        reason="Real src/ directory not available",
+        reason="Real source/ directory not available",
     )
     def test_real_selling_has_blanket_so(self):
         """Real codebase: selling should have blanket SO (implemented in Sprint 4)."""
@@ -727,7 +727,7 @@ class TestRealSrcIntegration:
 
     @pytest.mark.skipif(
         not os.path.isdir(os.path.join(SRC_ROOT, "erpclaw")),
-        reason="Real src/ directory not available",
+        reason="Real source/ directory not available",
     )
     def test_real_inventory_missing_fifo(self):
         """Real codebase: inventory should be missing FIFO valuation."""
@@ -737,7 +737,7 @@ class TestRealSrcIntegration:
 
     @pytest.mark.skipif(
         not os.path.isdir(os.path.join(SRC_ROOT, "erpclaw")),
-        reason="Real src/ directory not available",
+        reason="Real source/ directory not available",
     )
     def test_real_payroll_has_overtime(self):
         """Real codebase: payroll should have overtime (implemented in Sprint 6)."""
@@ -747,7 +747,7 @@ class TestRealSrcIntegration:
 
     @pytest.mark.skipif(
         not os.path.isdir(os.path.join(SRC_ROOT, "erpclaw")),
-        reason="Real src/ directory not available",
+        reason="Real source/ directory not available",
     )
     def test_real_all_domain_scores(self):
         """Real codebase: all domain scores should be computable."""

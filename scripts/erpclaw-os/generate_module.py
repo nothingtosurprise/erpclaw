@@ -958,7 +958,7 @@ from unittest.mock import patch
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 MODULE_DIR = os.path.dirname(TESTS_DIR)                    # scripts/
 ROOT_DIR = os.path.dirname(MODULE_DIR)                     # {module_name}/
-SRC_DIR = os.path.dirname(ROOT_DIR)                        # src/
+SRC_DIR = os.path.dirname(ROOT_DIR)                        # source/
 
 # Foundation schema init
 SETUP_DIR = os.path.join(SRC_DIR, "erpclaw", "scripts", "erpclaw-setup")
@@ -1308,8 +1308,8 @@ def generate_module(
         business_description: natural language description
         entities: list of entity definitions with pattern assignments
                   [{"name": "pet", "fields": [...], "pattern": "crud_entity"}, ...]
-        output_dir: where to write files (default: src/{module_name}/)
-        src_root: project src/ root for validation
+        output_dir: where to write files (default: source/{module_name}/)
+        src_root: project source/ root for validation
 
     Returns: {
         "result": "pass" | "fail",

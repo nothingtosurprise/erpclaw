@@ -475,8 +475,8 @@ def handle_classify_operation(args):
 def _load_action_map():
     """Load ACTION_MAP from the core erpclaw db_query.py."""
     # Try to find core db_query.py relative to this file
-    # erpclaw-os is at src/erpclaw/scripts/erpclaw-os/
-    # core db_query is at src/erpclaw/scripts/db_query.py
+    # erpclaw-os is at source/erpclaw/scripts/erpclaw-os/
+    # core db_query is at source/erpclaw/scripts/db_query.py
     core_db_query = os.path.join(SCRIPT_DIR, "..", "db_query.py")
     core_db_query = os.path.normpath(core_db_query)
 

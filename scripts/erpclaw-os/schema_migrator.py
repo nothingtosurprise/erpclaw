@@ -75,7 +75,7 @@ def plan_migration(module_path, db_path=None, src_root=None):
     Args:
         module_path: Path to the module directory (must contain init_db.py)
         db_path: Path to the SQLite database
-        src_root: Path to src/ directory (for table ownership checks)
+        src_root: Path to source/ directory (for table ownership checks)
 
     Returns:
         dict with migration_id, ddl_statements, validation, table_count, etc.

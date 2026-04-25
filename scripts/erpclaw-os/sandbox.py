@@ -35,30 +35,30 @@ check_gl_invariants = _checker_mod.check_gl_invariants
 def _find_project_root() -> Path:
     """Discover the project root by walking up from this file.
 
-    Looks for the characteristic `src/erpclaw/scripts/erpclaw-setup/init_schema.py`.
+    Looks for the characteristic `source/erpclaw/scripts/erpclaw-setup/init_schema.py`.
     Falls back to a common relative path from the erpclaw-os directory.
     """
-    # Start from this file's directory: src/erpclaw/scripts/erpclaw-os/
+    # Start from this file's directory: source/erpclaw/scripts/erpclaw-os/
     current = Path(__file__).resolve().parent
-    # Walk up: erpclaw-os -> scripts -> erpclaw -> src -> project root
+    # Walk up: erpclaw-os -> scripts -> erpclaw -> source -> project root
     candidate = current.parent.parent.parent.parent
-    if (candidate / "src" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py").exists():
+    if (candidate / "source" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py").exists():
         return candidate
     # Fallback: walk up until we find the sentinel
     for parent in current.parents:
-        sentinel = parent / "src" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py"
+        sentinel = parent / "source" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py"
         if sentinel.exists():
             return parent
     raise FileNotFoundError(
         "Cannot locate project root. Expected to find "
-        "src/erpclaw/scripts/erpclaw-setup/init_schema.py"
+        "source/erpclaw/scripts/erpclaw-setup/init_schema.py"
     )
 
 
 def _find_init_schema() -> str:
     """Return absolute path to core init_schema.py."""
     root = _find_project_root()
-    path = root / "src" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py"
+    path = root / "source" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py"
     if not path.exists():
         raise FileNotFoundError(f"Core init_schema.py not found at {path}")
     return str(path)
@@ -140,7 +140,7 @@ def run_in_sandbox(
     6. Clean up the temp directory (unless tests failed or keep_on_success)
 
     Args:
-        module_path: Absolute path to the module directory (e.g., src/legalclaw).
+        module_path: Absolute path to the module directory (e.g., source/legalclaw).
         timeout: Maximum seconds for the test run (default 120).
         keep_on_success: If True, preserve sandbox dir even on success.
 

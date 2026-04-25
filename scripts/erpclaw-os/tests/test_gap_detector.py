@@ -681,7 +681,7 @@ class TestRegistryAndHelpers:
 
 @pytest.fixture
 def fake_src(tmp_path):
-    """Create a synthetic src/ tree with init_schema.py, init_db.py, and db_query.py files.
+    """Create a synthetic source/ tree with init_schema.py, init_db.py, and db_query.py files.
 
     Tables defined:
       - company (heavily used in db_query.py — many references)
@@ -772,7 +772,7 @@ def fake_src(tmp_path):
 
 @pytest.fixture
 def fake_src_with_stubs(tmp_path):
-    """Create a synthetic src/ tree with various stub patterns.
+    """Create a synthetic source/ tree with various stub patterns.
 
     Files:
       - stock_posting.py (SAFETY_EXCLUDED) with "Not yet implemented" + "Phase 2+"

@@ -580,7 +580,7 @@ def handle_detect_gaps(args):
 def handle_detect_schema_divergence(args):
     """Detect tables defined in schema files with zero or minimal code references.
 
-    Requires --src-root pointing to the project src/ directory.
+    Requires --src-root pointing to the project source/ directory.
     """
     src_root = getattr(args, "src_root", None)
     if not src_root or not os.path.isdir(src_root):
@@ -606,7 +606,7 @@ def handle_detect_schema_divergence(args):
 def handle_detect_stubs(args):
     """Detect TODO / Not yet implemented / placeholder stubs in production code.
 
-    Requires --src-root pointing to the project src/ directory.
+    Requires --src-root pointing to the project source/ directory.
     """
     src_root = getattr(args, "src_root", None)
     if not src_root or not os.path.isdir(src_root):

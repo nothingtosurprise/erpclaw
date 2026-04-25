@@ -356,7 +356,7 @@ def main():
                         choices=["static", "runtime", "full"],
                         help="Type of validation to perform (default: static)")
     parser.add_argument("--db-path", help="Path to test database (for runtime validation)")
-    parser.add_argument("--src-root", help="Path to the src/ directory (for table registry)")
+    parser.add_argument("--src-root", help="Path to the source/ directory (for table registry)")
     parser.add_argument("--article-type", default="all",
                         choices=["all", "static", "runtime"],
                         help="Filter articles by enforcement type")

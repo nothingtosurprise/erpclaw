@@ -869,10 +869,10 @@ class TestArticle10_SecurityScan:
         assert result["result"] == "fail"
 
     def test_ssn_in_source_fails(self, tmp_path):
-        """SSN pattern (123-45-6789) in source code is caught."""
+        """SSN pattern (XXX-XX-XXXX format) in source code is caught."""
         mod = tmp_path / "ssnclaw"
         mod.mkdir()
-        (mod / "data.py").write_text('ssn = "123-45-6789"\n')
+        (mod / "data.py").write_text('ssn = "123-45-6789"\n')  # fake test fixture for SEC-03
         result = _check_article_10(str(mod))
         assert result["result"] == "fail"
         assert any("SSN" in v.get("pattern", "") for v in result["violations"])

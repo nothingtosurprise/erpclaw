@@ -35,11 +35,11 @@ from pattern_library import PATTERNS, TERM_TO_PATTERN, get_pattern, list_pattern
 # Paths
 # ---------------------------------------------------------------------------
 
-# tests/ -> erpclaw-os/ -> scripts/ -> erpclaw/ -> src/ -> project-root/
+# tests/ -> erpclaw-os/ -> scripts/ -> erpclaw/ -> source/ -> project-root/
 _PROJECT_ROOT = OS_DIR
 for _ in range(4):
     _PROJECT_ROOT = os.path.dirname(_PROJECT_ROOT)
-SRC_ROOT = os.path.join(_PROJECT_ROOT, "src")
+SRC_ROOT = os.path.join(_PROJECT_ROOT, "source")
 
 
 # ---------------------------------------------------------------------------

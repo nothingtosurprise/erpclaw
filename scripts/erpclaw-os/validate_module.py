@@ -16,7 +16,7 @@ import yaml
 
 # ---------------------------------------------------------------------------
 # Table prefix mapping: module directory name -> expected table prefix(es)
-# Core ERP modules (under src/erpclaw/) use unprefixed tables.
+# Core ERP modules (under source/erpclaw/) use unprefixed tables.
 # ---------------------------------------------------------------------------
 
 # Known prefix overrides for modules whose directory name doesn't map directly
@@ -287,9 +287,9 @@ def _derive_module_name(module_path: str) -> str:
     """Derive the module name from the directory path.
 
     Examples:
-        /path/to/src/legalclaw -> legalclaw
-        /path/to/src/healthclaw/healthclaw-vet -> healthclaw-vet
-        /path/to/src/erpclaw-addons/erpclaw-loans -> erpclaw-loans
+        /path/to/source/legalclaw -> legalclaw
+        /path/to/source/healthclaw/healthclaw-vet -> healthclaw-vet
+        /path/to/source/erpclaw-addons/erpclaw-loans -> erpclaw-loans
     """
     return os.path.basename(os.path.normpath(module_path))
 
@@ -297,7 +297,7 @@ def _derive_module_name(module_path: str) -> str:
 def _is_core_module(module_path: str) -> bool:
     """Check if the module is the core ERP (erpclaw-setup, erpclaw-gl, etc.).
 
-    Core modules are under src/erpclaw/scripts/erpclaw-* and use unprefixed tables.
+    Core modules are under source/erpclaw/scripts/erpclaw-* and use unprefixed tables.
     """
     norm = os.path.normpath(module_path)
     # Check if under erpclaw/scripts/ (core domain subdirectory)
@@ -1344,7 +1344,7 @@ def validate_module_static(module_path: str, src_root: str = None) -> dict:
 
     Args:
         module_path: Path to the module directory (must contain SKILL.md and/or init_db.py)
-        src_root: Path to the src/ directory (for cross-module table resolution).
+        src_root: Path to the source/ directory (for cross-module table resolution).
                   If None, attempts to auto-detect from module_path.
 
     Returns:
@@ -1362,12 +1362,12 @@ def validate_module_static(module_path: str, src_root: str = None) -> dict:
 
     # Auto-detect src_root
     if src_root is None:
-        # Walk up to find src/ directory
+        # Walk up to find source/ directory
         current = module_path
         for _ in range(10):
             parent = os.path.dirname(current)
-            if os.path.basename(parent) == "src" or os.path.basename(current) == "src":
-                src_root = current if os.path.basename(current) == "src" else parent
+            if os.path.basename(parent) == "source" or os.path.basename(current) == "source":
+                src_root = current if os.path.basename(current) == "source" else parent
                 break
             current = parent
 

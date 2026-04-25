@@ -397,7 +397,7 @@ def _read_action_source(module_name, action_name):
     Searches the project source tree for the module's db_query.py.
     Returns None if not found.
     """
-    # Navigate from SCRIPT_DIR (erpclaw-os/) up to src/
+    # Navigate from SCRIPT_DIR (erpclaw-os/) up to source/
     src_root = os.path.normpath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
     if not os.path.isdir(src_root):
         return None

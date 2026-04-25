@@ -26,7 +26,7 @@ _TESTS_DIR = Path(__file__).resolve().parent
 _ERPCLAW_OS_DIR = _TESTS_DIR.parent
 _SCRIPTS_DIR = _ERPCLAW_OS_DIR.parent  # erpclaw/scripts/
 _ERPCLAW_DIR = _SCRIPTS_DIR.parent     # erpclaw/
-_SRC_DIR = _ERPCLAW_DIR.parent         # src/
+_SRC_DIR = _ERPCLAW_DIR.parent         # source/
 _PROJECT_ROOT = _SRC_DIR.parent        # project root
 
 # Ensure erpclaw_lib is importable
@@ -54,7 +54,7 @@ _find_project_root = _sandbox_mod._find_project_root
 
 # Core init_schema.py path
 _INIT_SCHEMA_PATH = str(
-    _PROJECT_ROOT / "src" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py"
+    _PROJECT_ROOT / "source" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py"
 )
 
 
@@ -687,7 +687,7 @@ def test_gl_insert():
     def test_project_root_discovery(self):
         """Verify _find_project_root locates the project correctly."""
         root = _find_project_root()
-        assert (root / "src" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py").exists()
+        assert (root / "source" / "erpclaw" / "scripts" / "erpclaw-setup" / "init_schema.py").exists()
 
     def test_find_init_schema(self):
         """Verify _find_init_schema returns a valid path."""

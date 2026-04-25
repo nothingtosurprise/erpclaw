@@ -40,7 +40,7 @@ def run_pipeline(module_path, db_path=None, src_root=None, skip_sandbox=False):
     Args:
         module_path: Path to the module directory
         db_path: Path to SQLite database
-        src_root: Path to src/ directory (for validation)
+        src_root: Path to source/ directory (for validation)
         skip_sandbox: Skip sandbox testing (for pre-tested modules)
 
     Returns:
