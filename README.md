@@ -107,7 +107,7 @@ Single SQLite database at `~/.openclaw/erpclaw/data.sqlite`:
 
 ## Module Registry
 
-The module registry (`scripts/module_registry.json`) tracks all 44 modules across 14 GitHub repositories. Use `install-module` to add any module:
+The module registry (`scripts/module_registry.json`) tracks all 48 modules across 14 GitHub repositories. Use `install-module` to add any module:
 
 ```
 "Install the manufacturing module"
@@ -116,6 +116,34 @@ The module registry (`scripts/module_registry.json`) tracks all 44 modules acros
 ```
 
 Modules install from `github.com/avansaber/*` repos via sparse checkout — only the requested module is downloaded, not the entire repo.
+
+## Deep Integrations
+
+ERPClaw ships with two free, open-source, self-hosted deep integrations that sync directly into your general ledger. Your data stays on your own ERPClaw instance.
+
+### Stripe (`erpclaw-integrations-stripe`)
+
+Deep Stripe integration. 67 actions across 10 domains: account management, charges/refunds/disputes/payouts/subscriptions sync, customer mapping, GL posting with rule engine, payout reconciliation, ASC 606 revenue recognition, Connect platform fees, webhook processing, and financial reports (revenue, MRR, fees, disputes).
+
+```
+install-module erpclaw-integrations-stripe
+```
+
+- **Stripe Marketplace listing:** [marketplace.stripe.com/apps/erpclaw-accounting](https://marketplace.stripe.com/apps/erpclaw-accounting)
+- **Docs:** [erpclaw.ai/docs/stripe](https://www.erpclaw.ai/docs/stripe)
+
+### Shopify (`erpclaw-integrations-shopify`)
+
+Deep Shopify integration. 66 actions across 15 domains: order/refund/payout/dispute sync, product + customer mapping, 14 GL account mappings, configurable GL routing rules, three-layer payout reconciliation, COGS tracking, gift card deferred revenue, GDPR webhooks, App Store OAuth pairing with status mirror, and revenue/fee/refund reports.
+
+```
+install-module erpclaw-integrations-shopify
+```
+
+- **Shopify App Store:** ERPClaw Accounting & ERP (listing pending approval)
+- **Docs:** [erpclaw.ai/docs/shopify](https://www.erpclaw.ai/docs/shopify)
+
+OAuth tokens are forwarded once to your ERPClaw during pairing and deleted from the Worker within 60 seconds. A custom-app flow is also available for air-gapped installs.
 
 ## Web Dashboard
 
