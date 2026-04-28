@@ -1870,7 +1870,7 @@ def seed_permissions(conn, args):
 ONBOARDING_STATE_DIR = os.path.expanduser("~/.openclaw/erpclaw")
 ONBOARDING_STATE_FILE = os.path.join(ONBOARDING_STATE_DIR, "onboarding_state.json")
 
-VALID_CURRENCIES = ["USD", "CAD", "GBP", "EUR", "INR"]
+VALID_CURRENCIES = ["USD", "EUR", "GBP", "CAD", "INR", "SGD", "AED"]
 
 
 def _load_onboarding_state():
@@ -1936,7 +1936,7 @@ def onboarding_step(conn, args):
         state["step"] = 2
         _save_onboarding_state(state)
         ok({"step": 2, "completed": False,
-            "prompt": f"Great! Company name: {answer}\n\nWhat currency? (USD/CAD/GBP/EUR/INR)",
+            "prompt": f"Great! Company name: {answer}\n\nWhat currency? (USD/EUR/GBP/CAD/INR/SGD/AED)",
             "options": VALID_CURRENCIES, "field": "currency"})
         return
 
@@ -1944,7 +1944,7 @@ def onboarding_step(conn, args):
     if step == 2:
         if not answer:
             ok({"step": 2, "completed": False,
-                "prompt": "What currency? (USD/CAD/GBP/EUR/INR)",
+                "prompt": "What currency? (USD/EUR/GBP/CAD/INR/SGD/AED)",
                 "options": VALID_CURRENCIES, "field": "currency"})
             return
         currency = answer.upper().strip()

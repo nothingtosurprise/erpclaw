@@ -1,13 +1,13 @@
 {
-  "version": "3.4.5",
-  "generated": "2026-03-31",
+  "version": "3.5.0",
+  "generated": "2026-04-27",
   "modules": {
     "erpclaw": {
       "display_name": "ERPClaw Core",
       "description": "Complete ERP foundation: accounting, inventory, selling, buying, billing, payments, tax, journals, GL, HR, payroll, reports, and setup. 466 actions across 15 domains.",
       "category": "core",
       "github": "avansaber/erpclaw",
-      "version": "2.0.0",
+      "version": "3.5.0",
       "requires": [],
       "has_init_db": false,
       "action_count": 466,
@@ -1058,7 +1058,7 @@
       "category": "expansion",
       "github": "avansaber/erpclaw-addons",
       "subdir": "erpclaw-integrations-shopify",
-      "version": "1.1.0",
+      "version": "1.1.3",
       "requires": [
         "erpclaw"
       ],

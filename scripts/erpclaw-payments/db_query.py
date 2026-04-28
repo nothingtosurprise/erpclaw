@@ -517,6 +517,47 @@ def _calc_early_payment_discount(conn, pe, allocations):
     return total_discount, discount_account_id, details, cost_center_id
 
 
+def _assert_currency_match(conn, pe, allocations):
+    """Enforce: invoice currency must equal payment currency.
+
+    Per ERPClaw multi-currency rule (2026-04-27): we do not convert. If a
+    customer invoice was raised in EUR, the payment matched against it
+    must also be in EUR. Stripe and the cardholder bank handle FX before
+    the money lands in our books.
+
+    Walks the allocation list. For each allocation against a sales_invoice
+    or purchase_invoice, looks up the invoice currency and compares it
+    (case-insensitively) to the payment_entry payment_currency. On any
+    mismatch, calls err() with a clean JSON error and exits 1.
+    """
+    pay_ccy = (pe.get("payment_currency") or "USD").upper()
+    for alloc in allocations:
+        vtype = alloc.get("voucher_type") or alloc.get("reference_type")
+        vid = alloc.get("voucher_id") or alloc.get("reference_id")
+        if not vtype or not vid:
+            continue
+        if vtype == "sales_invoice":
+            row = conn.execute(
+                Q.from_(SI).select(SI.currency).where(SI.id == P()).get_sql(),
+                (vid,)
+            ).fetchone()
+        elif vtype == "purchase_invoice":
+            row = conn.execute(
+                Q.from_(PI).select(PI.currency).where(PI.id == P()).get_sql(),
+                (vid,)
+            ).fetchone()
+        else:
+            continue
+        if not row:
+            continue
+        inv_ccy = (row["currency"] or "USD").upper()
+        if inv_ccy != pay_ccy:
+            err(
+                f"currency mismatch: invoice in {inv_ccy}, payment in "
+                f"{pay_ccy}; invoice currency must equal payment currency"
+            )
+
+
 def submit_payment(conn, args):
     """Submit a draft payment: post GL entries, create PLE, update status.
 
@@ -548,6 +589,11 @@ def submit_payment(conn, args):
 
     paid_amount = to_decimal(pe["paid_amount"])
     allocations = _get_allocations(conn, pe_id)
+
+    # Multi-currency rule (2026-04-27): invoice currency must equal payment
+    # currency. Reject any cross-currency allocation up front before any GL
+    # writes happen. ERPClaw does not convert.
+    _assert_currency_match(conn, pe, allocations)
 
     # Check for early payment discount
     discount_amount, discount_account_id, discount_details, disc_cost_center = \
@@ -583,13 +629,20 @@ def submit_payment(conn, args):
              "party_type": pe["party_type"], "party_id": pe["party_id"]},
         ]
 
-    # Apply multi-currency: set currency/exchange_rate on GL entries
+    # Apply multi-currency: set currency/exchange_rate on GL entries.
+    # Per the 2026-04-27 scope rule (invoice currency == payment currency,
+    # no FX conversion), payment_rate is always Decimal("1") in production.
+    # The branch below that fires when rate != 1, and the FX gain/loss
+    # branch further down, are dormant under the current rule. They are
+    # kept in place because the underlying schema and helpers still work
+    # if we ever expand scope to actual cross-currency conversion.
     payment_currency = pe["payment_currency"] or "USD"
     payment_rate = to_decimal(pe["exchange_rate"] or "1")
     if payment_currency != "USD" or payment_rate != Decimal("1"):
         prepare_multicurrency_entries(gl_entries, payment_currency, payment_rate)
 
-    # Compute FX gain/loss on allocated invoices
+    # DORMANT under current scope: FX gain/loss only fires on rate != 1.
+    # Currency-match validation above guarantees rate == 1 for now.
     fx_gain_loss_total = Decimal("0")
     if allocations and payment_rate != Decimal("1"):
         qc = Q.from_(COMPANY).select(COMPANY.exchange_gain_loss_account_id).where(COMPANY.id == P())
