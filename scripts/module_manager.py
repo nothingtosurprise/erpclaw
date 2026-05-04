@@ -604,26 +604,52 @@ def _install_module_inner(args, conn, modules_by_name, depth=0):
             _mark_failed(conn, module_name, "git not found in PATH")
             err("git is not installed or not in PATH")
 
-    # Verify SHA256 integrity if registry has it
-    expected_sha = module_info.get("sha256_skill_md")
-    if expected_sha:
-        skill_md_path = os.path.join(install_path, "SKILL.md")
-        if not os.path.isfile(skill_md_path):
+    # Full-tree integrity verification: every file in the registry's
+    # files_sha256 manifest must exist in the fetched tree and hash to
+    # the expected value. Mismatch, missing files, OR extra files cause
+    # abort + cleanup.
+    manifest = module_info.get("files_sha256")
+    if manifest:
+        # Walk the fetched tree to discover what was delivered, applying the
+        # same skip filters used at manifest generation time.
+        SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules", "dist", "build"}
+        SKIP_SUFFIXES = (".pyc", ".pyo", ".bak", ".tmp", ".DS_Store")
+        delivered = set()
+        for root, dirs, files in os.walk(install_path):
+            dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+            for fname in files:
+                if any(fname.endswith(s) for s in SKIP_SUFFIXES):
+                    continue
+                rel = os.path.relpath(os.path.join(root, fname), install_path)
+                delivered.add(rel)
+
+        expected = set(manifest.keys())
+        missing = expected - delivered
+        extra = delivered - expected
+        mismatched = []
+
+        for rel in sorted(expected & delivered):
+            with open(os.path.join(install_path, rel), "rb") as f:
+                actual = hashlib.sha256(f.read()).hexdigest()
+            if actual != manifest[rel]:
+                mismatched.append(rel)
+
+        if missing or extra or mismatched:
             shutil.rmtree(install_path, ignore_errors=True)
-            _mark_failed(conn, module_name, "SKILL.md missing in fetched module")
-            err(f"Module {module_name} fetched but SKILL.md missing")
-        with open(skill_md_path, "rb") as f:
-            actual_sha = hashlib.sha256(f.read()).hexdigest()
-        if actual_sha != expected_sha:
-            shutil.rmtree(install_path, ignore_errors=True)
-            _mark_failed(
-                conn, module_name,
-                f"SHA256 mismatch: expected {expected_sha[:12]}..., got {actual_sha[:12]}..."
-            )
+            problems = []
+            if missing:
+                problems.append(f"missing: {sorted(missing)[:5]}")
+            if extra:
+                problems.append(f"extra: {sorted(extra)[:5]}")
+            if mismatched:
+                problems.append(f"mismatched: {mismatched[:5]}")
+            summary = "; ".join(problems)
+            _mark_failed(conn, module_name, f"integrity-check failed: {summary}")
             err(
-                f"Integrity check failed for {module_name}: SHA256 of SKILL.md "
-                f"does not match registry. Expected {expected_sha[:12]}..., got {actual_sha[:12]}...; "
-                f"refusing to install."
+                f"Integrity check failed for {module_name}: "
+                f"{len(mismatched)} mismatched, {len(missing)} missing, "
+                f"{len(extra)} extra files vs registry manifest. "
+                f"Refusing to install. Details: {summary}"
             )
 
     # Read module.json if it exists

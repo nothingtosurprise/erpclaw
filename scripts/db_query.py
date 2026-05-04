@@ -681,9 +681,12 @@ DANGEROUS_ACTIONS = frozenset({
 
 
 def _is_user_confirmed() -> bool:
-    """Check if --user-confirmed flag or ERPCLAW_USER_CONFIRMED=1 env is set."""
-    if os.environ.get("ERPCLAW_USER_CONFIRMED") == "1":
-        return True
+    """Confirmation requires the explicit per-invocation flag.
+
+    Environment-variable forms intentionally not honored: a process-wide
+    bypass would let agents/cron/CI globally enable financial mutations
+    without a fresh check. Per-invocation only.
+    """
     return "--user-confirmed" in sys.argv
 
 
@@ -708,8 +711,7 @@ def _gate_dangerous_action(action: str) -> None:
         "action": action,
         "message": (
             f"Action '{action}' materially changes financial or system state. "
-            f"Re-invoke with --user-confirmed (or set ERPCLAW_USER_CONFIRMED=1) "
-            f"to proceed."
+            f"Re-invoke with --user-confirmed to proceed."
         ),
     }))
     sys.exit(2)

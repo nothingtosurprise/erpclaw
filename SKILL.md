@@ -1,6 +1,6 @@
 ---
 name: erpclaw
-version: 4.1.0
+version: 4.1.1
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
@@ -18,7 +18,7 @@ metadata: {"openclaw":{"type":"executable","install":{"post":"python3 scripts/er
 
 **Full-Stack ERP Controller** for ERPClaw. Company setup, chart of accounts, journal entries, payments, tax, financial reports, customers, sales, suppliers, purchasing, inventory, billing, HR, US payroll, advanced accounting (ASC 606/842, intercompany, consolidation), and 43 optional industry modules. Local-first SQLite, double-entry GL, immutable audit trail.
 
-**Security:** Local-first (`~/.openclaw/erpclaw/data.sqlite`, mode 600). Parameterized queries. RBAC (PBKDF2). Immutable GL. Sensitive fields are encrypted at the column level (AES-256-GCM). Credentials managed via OS keychain (`set-credential` action). Network access limited to `fetch-exchange-rates` (public API) and user-approved `install-module` from `github.com/avansaber/*` (sha256-pinned).
+**Security:** Local-first. Parameterized queries. RBAC (PBKDF2). Immutable GL. Sensitive fields encrypted at the column level. Network access limited to `fetch-exchange-rates` (public API) and user-approved `install-module` from `github.com/avansaber/*`.
 
 ### Skill Activation Triggers
 
