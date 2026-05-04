@@ -2,6 +2,42 @@
 
 All notable changes to the ERPClaw foundation skill.
 
+## [4.0.2] — 2026-05-04
+
+Eliminate F1 (Rogue Agents / cron) Concern from the ClawHub OpenClaw review by removing decorative `cron:` blocks from foundation and grouped-addons SKILL.md files.
+
+### Why
+
+Phase 2 audit verification (B1) discovered that OpenClaw's runtime cron daemon does NOT auto-discover SKILL.md `cron:` blocks. Active scheduling requires explicit `openclaw cron add` CLI commands. The `cron:` block in foundation SKILL.md was therefore decorative metadata, not active scheduling — but the ClawHub static analyzer was reading it as scheduled financial mutation and flagging F1 as HIGH/Concern.
+
+Removing the decorative blocks eliminates the trigger at the source without changing operational behavior (no user has ever had ERPClaw crons running automatically from `clawhub install`; users wanting daily jobs always had to run `openclaw cron add` manually).
+
+### Changed
+- **Foundation `SKILL.md`**: removed the entire `cron:` block (4 entries: process-recurring, generate-recurring-invoices, check-reorder, check-overdue). Replaced "Background automation" prose section with "Optional scheduling" pointer to `openclaw cron add` for users who want daily jobs.
+- **`erpclaw-growth` SKILL.md** (grouped addon): removed 1 cron entry (weekly anomaly detection sweep).
+- **`erpclaw-ops` SKILL.md** (grouped addon): removed 3 cron entries (monthly depreciation, daily overdue issues, weekly SLA compliance).
+- **Library self-heal disclosure** kept as standalone subsection (was bundled with cron prose in v4.0.1).
+- Foundation `version: 4.0.1` → `4.0.2`.
+- `erpclaw_lib/__version__ = "4.0.2"`.
+- `module_registry.json` top-level `version: "4.0.2"`.
+
+### Notes
+- No code paths read SKILL.md cron blocks. Verified via grep across `source/`, `managers/`, `scripts/` — zero hits for cron-block consumption.
+- All 4 daily action targets (`process-recurring`, `generate-recurring-invoices`, `check-reorder`, `check-overdue`) remain in foundation as on-demand callable actions. No capability removed.
+- Users who want automatic daily runs use `openclaw cron add --name <id> --cron "<expr>" --message "Using erpclaw, run the <action> action."` — the same path that was always required for actual scheduling.
+- Plan + audit + B1 verification: `apps/CLAWHUB_FIX_v402_PLAN_2026-05-04.md` + `apps/CLAWHUB_FIX_v402_AUDIT_2026-05-04.md` + this CHANGELOG entry.
+
+### Migration arc
+
+| Version | Cron in foundation SKILL.md | Cron actually running on install |
+|---|---|---|
+| v3.5.1 | 4 entries, `announce: false` | NO (decorative only) |
+| v4.0.0 | 4 entries, `announce: false` | NO |
+| v4.0.1 | 4 entries, `announce: true` | NO |
+| v4.0.2 | none | NO (unchanged — same as all prior) |
+
+The "migration" is operationally a no-op. Only the SKILL.md text changed.
+
 ## [4.0.1] — 2026-05-04
 
 Security patch responding to ClawHub OpenClaw v4.0.0 review findings. Documentation, defaults, and disclosure changes; no schema changes, no new actions.

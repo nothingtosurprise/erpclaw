@@ -1,6 +1,6 @@
 ---
 name: erpclaw
-version: 4.0.1
+version: 4.0.2
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
@@ -12,23 +12,6 @@ source: https://github.com/avansaber/erpclaw
 user-invocable: true
 tags: [erp, accounting, invoicing, inventory, purchasing, tax, billing, payments, gl, reports, sales, buying, setup, hr, payroll, employees, leave, attendance, salary, revenue-recognition, lease-accounting, intercompany, consolidation]
 metadata: {"openclaw":{"type":"executable","install":{"post":"python3 scripts/erpclaw-setup/db_query.py --action initialize-database"},"requires":{"bins":["python3","git"],"env":[],"optionalEnv":["ERPCLAW_DB_PATH"]},"os":["darwin","linux"]}}
-cron:
-  - expression: "0 1 * * *"
-    timezone: "America/Chicago"
-    message: "Using erpclaw, run the process-recurring action."
-    announce: true
-  - expression: "0 6 * * *"
-    timezone: "America/Chicago"
-    message: "Using erpclaw, run the generate-recurring-invoices action."
-    announce: true
-  - expression: "0 7 * * *"
-    timezone: "America/Chicago"
-    message: "Using erpclaw, run the check-reorder action."
-    announce: true
-  - expression: "0 8 * * *"
-    timezone: "America/Chicago"
-    message: "Using erpclaw, run the check-overdue action and summarize any overdue invoices."
-    announce: true
 ---
 
 # erpclaw
@@ -52,11 +35,13 @@ The local SQLite database stores all ERP data including HR, payroll, and integra
 
 Module installs are restricted to `github.com/avansaber/*` repos at the registry-pinned version. The registry (`module_registry.json`) is fetched from the same GitHub org. Each install requires explicit user approval. Review the source repository before approving an install, and prefer pinned releases over `main` for production financial data.
 
-### Background automation
+### Optional scheduling
 
-Foundation `erpclaw` schedules four daily background jobs (defined in the `cron:` block above): `process-recurring` (1am Chicago, posts recurring journal entries), `generate-recurring-invoices` (6am, creates invoices from recurring templates), `check-reorder` (7am, flags items below reorder level), and `check-overdue` (8am, summarizes overdue invoices). All four are configured `announce: true` so each run is visible in the OpenClaw activity feed. To disable a specific cron after install, edit it via the OpenClaw cron-management UI or remove the corresponding entry from your local skill copy. Underlying GL writes are recorded in `gl_entry` and visible via `list-gl-entries` for after-the-fact review.
+Foundation does not register any background jobs. Actions like `process-recurring`, `generate-recurring-invoices`, `check-reorder`, and `check-overdue` are run on demand by the user. To run any of them on a schedule, register a job with the OpenClaw runtime cron CLI (`openclaw cron add --name <id> --cron "<expr>" --message "Using erpclaw, run the <action> action."`). Schedules registered this way are listed by `openclaw cron list` and removed with `openclaw cron rm`.
 
-The foundation also self-heals its shared library (`~/.openclaw/erpclaw/lib/erpclaw_lib/`) on version mismatch — if the deployed lib is older than the bundled lib (e.g., after a `clawhub update`), the next foundation action triggers an automatic re-sync. Each re-sync is logged to `~/.openclaw/erpclaw/logs/bootstrap.log`. To disable the self-heal (security-sensitive deployments), set the env var `ERPCLAW_DISABLE_BOOTSTRAP=1`.
+### Library self-heal
+
+The foundation self-heals its shared library at `~/.openclaw/erpclaw/lib/erpclaw_lib/` on version mismatch. If the deployed lib is older than the bundled lib (e.g., after a `clawhub update`), the next foundation action triggers an automatic re-sync. Each re-sync is logged to `~/.openclaw/erpclaw/logs/bootstrap.log`. To disable the self-heal in security-sensitive deployments, set the env var `ERPCLAW_DISABLE_BOOTSTRAP=1`.
 
 ### Skill Activation Triggers
 
