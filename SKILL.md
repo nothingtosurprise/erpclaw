@@ -1,6 +1,6 @@
 ---
 name: erpclaw
-version: 4.1.1
+version: 4.1.2
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
@@ -34,6 +34,10 @@ python3 {baseDir}/scripts/erpclaw-setup/db_query.py --action initialize-database
 python3 {baseDir}/scripts/db_query.py --action seed-defaults --company-id <id>
 python3 {baseDir}/scripts/db_query.py --action setup-chart-of-accounts --company-id <id> --template us_gaap
 ```
+
+## Runtime gate
+
+Write actions that materially change financial state require the `--user-confirmed` flag on every invocation. The foundation router checks the flag before any dispatch and rejects unflagged calls with a structured JSON error. Read-only actions (verbs `list`, `get`, reports) run without the flag.
 
 ## All 467 Actions
 

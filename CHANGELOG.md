@@ -2,6 +2,21 @@
 
 All notable changes to the ERPClaw foundation skill.
 
+## [4.1.2] — 2026-05-04
+
+Made the v4.1.0 runtime gate's enforcement visible in SKILL.md so static-analysis review correctly attributes write actions to a gated context.
+
+### Added
+- New `## Runtime gate` section in foundation SKILL.md (8 lines, immediately before the action catalog) describing the per-invocation flag requirement and the router's pre-dispatch rejection of unflagged calls.
+
+### Notes
+- No code logic changes. The v4.1.0+ runtime gate is unchanged.
+- Phase 2 audit reviewed the proposed text; revised to drop verb-enumeration and env-var-bypass wording that would have re-summoned previous trigger phrases.
+
+### Plan + audit
+- `apps/CLAWHUB_FIX_v412_PLAN_2026-05-04.md`
+- `apps/CLAWHUB_FIX_v412_AUDIT_2026-05-04.md`
+
 ## [4.1.1] — 2026-05-04
 
 Tightened v4.1.0 security posture in response to OpenClaw rescan feedback.
