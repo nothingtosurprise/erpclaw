@@ -1,6 +1,6 @@
 ---
 name: erpclaw
-version: 4.0.0
+version: 4.0.1
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
@@ -16,19 +16,19 @@ cron:
   - expression: "0 1 * * *"
     timezone: "America/Chicago"
     message: "Using erpclaw, run the process-recurring action."
-    announce: false
+    announce: true
   - expression: "0 6 * * *"
     timezone: "America/Chicago"
     message: "Using erpclaw, run the generate-recurring-invoices action."
-    announce: false
+    announce: true
   - expression: "0 7 * * *"
     timezone: "America/Chicago"
     message: "Using erpclaw, run the check-reorder action."
-    announce: false
+    announce: true
   - expression: "0 8 * * *"
     timezone: "America/Chicago"
     message: "Using erpclaw, run the check-overdue action and summarize any overdue invoices."
-    announce: false
+    announce: true
 ---
 
 # erpclaw
@@ -39,6 +39,24 @@ HR (employees, leave, attendance, expenses), US payroll (FICA, W-2, garnishments
 (ASC 606/842, intercompany, consolidation), and 43 industry modules. Single local SQLite DB, double-entry GL, immutable audit trail.
 
 **Security:** Local-first (`~/.openclaw/erpclaw/data.sqlite`). Parameterized queries. RBAC (PBKDF2). Immutable GL. Network only for `fetch-exchange-rates` (public API) and `install-module` (GitHub `avansaber/*`, requires user approval). Integration API keys (Stripe, Shopify, etc.) are passed via `--api-key` flags and stored in the local DB only — no credentials in code or environment variables.
+
+### Credential handling
+
+API keys for integrations are accepted via `--api-key` flags and persisted to the local DB. Recommended practices: (1) use Stripe restricted keys / Shopify scoped tokens with the minimum permissions needed; (2) rotate keys quarterly; (3) the database file is created mode 600 by `initialize-database` and re-asserted on every action invocation; (4) avoid passing keys via shell when shell history is shared. Future versions will support OS keychain backends.
+
+### Data protection
+
+The local SQLite database stores all ERP data including HR, payroll, and integration credentials. Protect it: (1) the `~/.openclaw/erpclaw/data.sqlite` file (and its WAL/SHM siblings) is created mode 600 by `initialize-database`; (2) keep backups out of cloud sync folders unless encrypted; (3) test imports and CSV uploads against a separate database before applying to production data. Restoring from a backup is supported via `restore-database`.
+
+### Module installation safety
+
+Module installs are restricted to `github.com/avansaber/*` repos at the registry-pinned version. The registry (`module_registry.json`) is fetched from the same GitHub org. Each install requires explicit user approval. Review the source repository before approving an install, and prefer pinned releases over `main` for production financial data.
+
+### Background automation
+
+Foundation `erpclaw` schedules four daily background jobs (defined in the `cron:` block above): `process-recurring` (1am Chicago, posts recurring journal entries), `generate-recurring-invoices` (6am, creates invoices from recurring templates), `check-reorder` (7am, flags items below reorder level), and `check-overdue` (8am, summarizes overdue invoices). All four are configured `announce: true` so each run is visible in the OpenClaw activity feed. To disable a specific cron after install, edit it via the OpenClaw cron-management UI or remove the corresponding entry from your local skill copy. Underlying GL writes are recorded in `gl_entry` and visible via `list-gl-entries` for after-the-fact review.
+
+The foundation also self-heals its shared library (`~/.openclaw/erpclaw/lib/erpclaw_lib/`) on version mismatch — if the deployed lib is older than the bundled lib (e.g., after a `clawhub update`), the next foundation action triggers an automatic re-sync. Each re-sync is logged to `~/.openclaw/erpclaw/logs/bootstrap.log`. To disable the self-heal (security-sensitive deployments), set the env var `ERPCLAW_DISABLE_BOOTSTRAP=1`.
 
 ### Skill Activation Triggers
 
@@ -199,21 +217,18 @@ python3 {baseDir}/scripts/db_query.py --action setup-chart-of-accounts --company
 | `generate-w2-data` / `generate-nacha-file` / `add-garnishment` / `update-garnishment` / `get-garnishment` / `list-garnishments` | W-2, NACHA, garnishments |
 | `get-amendment-history` | Amendment tracking |
 
-### Module Management & Quality (41)
+### Module Management & Schema (15)
 | Action | Description |
 |--------|-------------|
 | `install-module` / `remove-module` / `update-modules` / `list-modules` / `available-modules` / `search-modules` / `module-status` | Module catalog (install/remove require user approval) |
 | `rebuild-action-cache` / `list-all-actions` / `list-profiles` / `onboard` / `list-industries` | Actions & profiles |
-| `validate-module` / `generate-module` / `configure-module` / `deploy-module` | Module lifecycle (all require user approval) |
-| `build-table-registry` / `list-articles` / `install-suite` / `classify-operation` / `run-audit` / `compliance-weather-status` | Validation & audit |
-| `schema-plan` / `schema-apply` / `schema-rollback` / `schema-drift` / `deploy-audit-log` | Schema migration (apply/rollback require user approval) |
-| `semantic-check` / `semantic-rules-list` | Semantic correctness |
-| `log-improvement` / `list-improvements` / `review-improvement` | Improvement suggestions (advisory only) |
-| `dgm-run-variant` / `dgm-list-variants` / `dgm-select-best` | Variant analysis (advisory only, never auto-deployed) |
-| `heartbeat-analyze` / `heartbeat-report` / `heartbeat-suggest` / `detect-gaps` / `suggest-modules` | Gap detection (suggestions only) |
+| `validate-module` | Constitution check for any module (read-only) |
+| `schema-plan` / `schema-apply` / `schema-rollback` / `schema-drift` | Schema migration (apply/rollback require user approval) |
 | `regenerate-skill-md` | Regenerate SKILL.md |
 
-**Always confirm with user before running:** `setup-company`, `onboard`, `install-module`, `remove-module`, `update-modules`, `generate-module`, `deploy-module`, `schema-apply`, `schema-rollback`, `submit-*`, `cancel-*`, `approve-*`, `reject-*`, `run-elimination`, `run-consolidation`, `restore-database`, `close-fiscal-year`, `initialize-database --force`.
+> **Module authoring + DGM evolution (developer tooling):** module generation, in-module feature injection, sandboxed test execution, deploy pipeline, DGM variants, gap detection, heartbeat analysis, semantic checks, and the OS-engine status command live in the optional `erpclaw-os-engine` addon (~30 actions, all `os-` prefixed). The addon is GitHub-only and not installed by default. Install via `module_manager.py --action install-module --module-name erpclaw-os-engine`. Foundation does not run module-generation or auto-deploy code paths.
+
+**Always confirm with user before running:** `setup-company`, `onboard`, `install-module`, `remove-module`, `update-modules`, `schema-apply`, `schema-rollback`, `submit-*`, `cancel-*`, `approve-*`, `reject-*`, `run-elimination`, `run-consolidation`, `restore-database`, `close-fiscal-year`, `initialize-database --force`.
 
 ## Technical Details (Tier 3)
 Router: `scripts/db_query.py` -> 14 core domains. Optional modules installed from GitHub (`avansaber/*`) to `~/.openclaw/erpclaw/modules/` (user-approved only). Single SQLite DB (WAL). 188 core tables (688 with modules). Money=TEXT(Decimal), IDs=TEXT(UUID4), GL immutable. Python 3.10+. All network activity limited to: (1) `fetch-exchange-rates` — public exchange rate API, (2) `install-module` — git clone from `github.com/avansaber/*` only, requires user approval.

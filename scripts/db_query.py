@@ -21,6 +21,51 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODULES_DIR = os.path.expanduser("~/.openclaw/erpclaw/modules")
 DB_PATH = os.path.expanduser("~/.openclaw/erpclaw/data.sqlite")
 
+
+def _bootstrap_lib_self_heal() -> None:
+    """Ensure deployed erpclaw_lib at ~/.openclaw/erpclaw/lib/ matches bundled.
+
+    Self-heal for the case where ClawHub `update` skipped the post-install
+    hook. Reads bundled erpclaw_lib.__version__ + _bootstrap directly from
+    the co-located scripts/erpclaw-setup/lib/ path (NOT the deployed path),
+    then delegates to bootstrap.ensure_lib_synced which inlines the copy
+    logic so we don't recurse through the deployed-but-stale lib.
+    Honors ERPCLAW_DISABLE_BOOTSTRAP=1.
+    """
+    bundled_lib = os.path.join(BASE_DIR, "erpclaw-setup", "lib")
+    if not os.path.isdir(os.path.join(bundled_lib, "erpclaw_lib")):
+        return  # dev environment without bundled lib; skip
+    sys.path.insert(0, bundled_lib)
+    try:
+        from erpclaw_lib import __version__ as bundled_version
+        from erpclaw_lib._bootstrap import ensure_lib_synced
+        ensure_lib_synced(bundled_version, bundled_lib)
+    except Exception as exc:  # never block real action work
+        print(f"warning: bootstrap self-heal skipped: {exc}", file=sys.stderr)
+    finally:
+        if bundled_lib in sys.path:
+            sys.path.remove(bundled_lib)
+
+
+_bootstrap_lib_self_heal()
+
+
+def _chmod_db_files_action() -> None:
+    """Lock down DB file perms to 600 on every action invocation.
+
+    Idempotent. Covers data.sqlite + WAL + SHM. Cheap (~30µs).
+    """
+    for suffix in ("", "-wal", "-shm"):
+        path = DB_PATH + suffix
+        try:
+            if os.path.exists(path):
+                os.chmod(path, 0o600)
+        except OSError:
+            pass
+
+
+_chmod_db_files_action()
+
 # Session ID for grouping action calls within one test scenario (set via env var)
 _SESSION_ID = os.environ.get("ERPCLAW_TEST_SESSION")
 

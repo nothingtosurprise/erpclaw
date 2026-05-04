@@ -804,6 +804,7 @@ def backup_database(conn, args):
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
 
+        _chmod_600(backup_path)
         size = os.path.getsize(backup_path)
         ok({"backup_path": backup_path, "size_bytes": size,
              "encrypted": True,
@@ -817,6 +818,7 @@ def backup_database(conn, args):
         dst.close()
         src.close()
 
+        _chmod_600(backup_path)
         size = os.path.getsize(backup_path)
         ok({"backup_path": backup_path, "size_bytes": size,
              "encrypted": False,
@@ -1016,6 +1018,7 @@ def restore_database(conn, args):
 
         # Step 3: Copy backup over current DB
         shutil.copy2(restore_source, db_path)
+        chmod_db_files(db_path)
 
         # Step 4 & 5: Verify restored DB
         verify_conn = sqlite3.connect(db_path)
@@ -1096,6 +1099,27 @@ def status(conn, args):
 # Database Initialization
 # ---------------------------------------------------------------------------
 
+def _chmod_600(path: str) -> None:
+    """Set file mode to 0o600 if the file exists. Silent on missing/permission errors."""
+    try:
+        if os.path.exists(path):
+            os.chmod(path, 0o600)
+    except OSError:
+        pass
+
+
+def chmod_db_files(db_path: str) -> None:
+    """Set mode 600 on the SQLite DB file and its WAL/SHM siblings.
+
+    Called from initialize_database, restore_database, and the every-action
+    bootstrap to keep credentials + payroll data unreadable to other users
+    on shared machines.
+    """
+    _chmod_600(db_path)
+    _chmod_600(db_path + "-wal")
+    _chmod_600(db_path + "-shm")
+
+
 def install_shared_library():
     """Copy bundled erpclaw_lib to the shared location (~/.openclaw/erpclaw/lib/).
 
@@ -1155,6 +1179,9 @@ def initialize_database(conn, args):
 
     # Run full schema initialization
     init_db(db_path)
+
+    # Lock down DB file perms (covers data.sqlite, -wal, -shm)
+    chmod_db_files(db_path)
 
     # Verify by reconnecting and counting
     verify_conn = sqlite3.connect(db_path)
