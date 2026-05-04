@@ -112,6 +112,7 @@ ACTION_MAP = {
     "list-credentials": "erpclaw-setup",
     "delete-credential": "erpclaw-setup",
     "migrate-credentials": "erpclaw-setup",
+    "import-master-key-from-backup": "erpclaw-setup",
     "link-telegram-user": "erpclaw-setup",
     "unlink-telegram-user": "erpclaw-setup",
     "check-telegram-permission": "erpclaw-setup",

@@ -614,6 +614,8 @@ def _install_module_inner(args, conn, modules_by_name, depth=0):
         # same skip filters used at manifest generation time.
         SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules", "dist", "build"}
         SKIP_SUFFIXES = (".pyc", ".pyo", ".bak", ".tmp", ".DS_Store")
+        # Files excluded from manifest by design (self-referential)
+        SKIP_RELPATHS = {"scripts/module_registry.json"} if module_name == "erpclaw" else set()
         delivered = set()
         for root, dirs, files in os.walk(install_path):
             dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
@@ -621,6 +623,8 @@ def _install_module_inner(args, conn, modules_by_name, depth=0):
                 if any(fname.endswith(s) for s in SKIP_SUFFIXES):
                     continue
                 rel = os.path.relpath(os.path.join(root, fname), install_path)
+                if rel in SKIP_RELPATHS:
+                    continue
                 delivered.add(rel)
 
         expected = set(manifest.keys())

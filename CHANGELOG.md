@@ -2,6 +2,25 @@
 
 All notable changes to the ERPClaw foundation skill.
 
+## [4.1.3] — 2026-05-04
+
+Cross-machine backup restore + Tier A regression fix-ups discovered during v4.1.x test-plan execution.
+
+### Added
+- New foundation action `import-master-key-from-backup`. Required for cross-machine restore: a backup taken on Machine A is now restorable on Machine B with full encrypted-column readability. The backup's ECRYPT02 header carries a passphrase-wrapped copy of the column-encryption master key; this action unwraps it and installs at `~/.config/erpclaw/master.key`. Refuses to overwrite an existing master key without `--force`. Passphrase via `--passphrase`, `--passphrase-from-stdin`, or `--passphrase-from-env`.
+
+### Changed
+- `backup-database --encrypt`: now wraps the current machine's column-encryption master key with the backup passphrase and embeds it in the ECRYPT02 header. Backups taken without a master key (no encrypted columns yet) work as before. Response now includes `carries_master_key: bool` to indicate whether cross-machine restore is supported for this backup.
+- Foundation action count: 474 → 475 (added `import-master-key-from-backup`).
+
+### Fixed
+- Foundation SKILL.md catalog now lists the 5 credential-management actions (`set-credential`, `get-credential`, `list-credentials`, `delete-credential`, `migrate-credentials`) added in v4.1.0, plus 2 module-discovery actions (`list-articles`, `build-table-registry`) that were previously implemented but undocumented. L0 `test_skillmd_action_completeness` was failing on this drift; now passes.
+- `test_nacha_ach.py::TestAddEmployeeBankAccount::test_basic_add` updated to decrypt encrypted columns before asserting plaintext (regression caused by v4.1.0 column encryption).
+
+### Notes
+- No code logic changes; only documentation alignment + one test fixture update.
+- 3 pre-existing `erpclaw-os-engine` constitution failures (Article 5 cross-module write violations + addon SKILL.md drift) deferred to Tier I (vertical addon cross-tests) per `apps/V410_TEST_PLAN_2026-05-04.md`.
+
 ## [4.1.2] — 2026-05-04
 
 Made the v4.1.0 runtime gate's enforcement visible in SKILL.md so static-analysis review correctly attributes write actions to a gated context.

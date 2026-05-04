@@ -1,10 +1,10 @@
 ---
 name: erpclaw
-version: 4.1.2
+version: 4.1.3
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
-  and financial reporting. 467 actions across 14 domains, 43 optional expansion modules (user-approved install from GitHub).
+  and financial reporting. 475 actions across 14 domains, 43 optional expansion modules (user-approved install from GitHub).
   Double-entry GL, immutable audit trail, US GAAP compliant.
 author: AvanSaber
 homepage: https://github.com/avansaber/erpclaw
@@ -39,9 +39,9 @@ python3 {baseDir}/scripts/db_query.py --action setup-chart-of-accounts --company
 
 Write actions that materially change financial state require the `--user-confirmed` flag on every invocation. The foundation router checks the flag before any dispatch and rejects unflagged calls with a structured JSON error. Read-only actions (verbs `list`, `get`, reports) run without the flag.
 
-## All 467 Actions
+## All 475 Actions
 
-### Setup & Admin (44)
+### Setup & Admin (50)
 | Action | Description |
 |--------|-------------|
 | `initialize-database` / `setup-company` / `update-company` / `get-company` / `list-companies` | DB init & company CRUD |
@@ -52,6 +52,8 @@ Write actions that materially change financial state require the `--user-confirm
 | `add-role` / `list-roles` / `assign-role` / `revoke-role` / `seed-permissions` | RBAC & security |
 | `link-telegram-user` / `unlink-telegram-user` / `check-telegram-permission` | Telegram integration |
 | `backup-database` / `list-backups` / `verify-backup` / `restore-database` / `cleanup-backups` | DB backup/restore |
+| `set-credential` / `get-credential` / `list-credentials` / `delete-credential` / `migrate-credentials` | Encrypted credential management |
+| `import-master-key-from-backup` | Cross-machine restore: install master key from a backup taken on another machine |
 | `get-audit-log` / `get-schema-version` / `update-regional-settings` / `onboard` | System admin |
 
 ### General Ledger (26)
@@ -183,12 +185,12 @@ Write actions that materially change financial state require the `--user-confirm
 | `generate-w2-data` / `generate-nacha-file` / `add-garnishment` / `update-garnishment` / `get-garnishment` / `list-garnishments` | W-2, NACHA, garnishments |
 | `get-amendment-history` | Amendment tracking |
 
-### Module Management & Schema (15)
+### Module Management & Schema (17)
 | Action | Description |
 |--------|-------------|
 | `install-module` / `remove-module` / `update-modules` / `list-modules` / `available-modules` / `search-modules` / `module-status` | Module catalog (install/remove require user approval) |
 | `rebuild-action-cache` / `list-all-actions` / `list-profiles` / `onboard` / `list-industries` | Actions & profiles |
-| `validate-module` | Constitution check for any module (read-only) |
+| `validate-module` / `list-articles` / `build-table-registry` | Constitution + module discovery (read-only) |
 | `schema-plan` / `schema-apply` / `schema-rollback` / `schema-drift` | Schema migration (apply/rollback require user approval) |
 | `regenerate-skill-md` | Regenerate SKILL.md |
 

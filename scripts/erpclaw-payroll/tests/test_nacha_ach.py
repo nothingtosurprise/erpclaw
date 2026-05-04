@@ -39,13 +39,20 @@ class TestAddEmployeeBankAccount:
         assert "employee_bank_account_id" in result
 
         # Verify in DB
+        # Bank fields are stored encrypted (v4.1.0+); decrypt before asserting plaintext.
+        from erpclaw_lib.encrypted_columns import decrypt_for_column
         row = conn.execute(
             "SELECT * FROM employee_bank_account WHERE id = ?",
             (result["employee_bank_account_id"],)
         ).fetchone()
         assert row is not None
-        assert row["routing_number"] == "021000021"
-        assert row["account_number"] == "123456789"
+        assert decrypt_for_column(row["routing_number"], "employee_bank_account", "routing_number") == "021000021"
+        assert decrypt_for_column(row["account_number"], "employee_bank_account", "account_number") == "123456789"
+        # On-disk values must be ciphertext (regression check for column encryption)
+        assert row["routing_number"].startswith("enc:v2:"), \
+            f"routing_number stored plaintext on disk: {row['routing_number']!r}"
+        assert row["account_number"].startswith("enc:v2:"), \
+            f"account_number stored plaintext on disk: {row['account_number']!r}"
 
     def test_savings_account(self, conn):
         """Add a savings account."""

@@ -201,35 +201,50 @@ def _decrypt_ecrypt02(fin, output_path: str, passphrase: str) -> dict:
 
 def _decrypt_ecrypt01_legacy(input_path: str, output_path: str,
                               passphrase: str) -> dict:
-    """Legacy decrypt for v4.0.x ECRYPT01 backups (HMAC-SHA256-CTR)."""
+    """Legacy decrypt for v3.5.x / v4.0.x ECRYPT01 backups.
+
+    Format (mirrors the v4.0.2 encrypt_file at git tag v4.0.2):
+        magic (12) || salt (16) || iv (16) || ciphertext (variable) || mac (32)
+
+    Uses encrypt-then-MAC with separate mac_key
+    (derive_key(passphrase, salt + b"mac", iterations=1000)). PBKDF2
+    iter count for the encryption key is 480,000 (legacy default).
+    Stream cipher is HMAC-SHA256-CTR with little-endian counter || iv[:8].
+    """
     with open(input_path, "rb") as fin:
         data = fin.read()
     if not data.startswith(ECRYPT01_MAGIC):
         raise ValueError("not a recognized ERPClaw encrypted file")
-    body = data[len(ECRYPT01_MAGIC):]
-    salt = body[:SALT_LEN]
-    iv = body[SALT_LEN:SALT_LEN + 16]
-    mac = body[SALT_LEN + 16:SALT_LEN + 16 + 32]
-    ciphertext = body[SALT_LEN + 16 + 32:]
 
-    # Legacy used 480,000 iterations
+    offset = len(ECRYPT01_MAGIC)
+    salt = data[offset:offset + 16]; offset += 16
+    iv = data[offset:offset + 16]; offset += 16
+    mac = data[-32:]
+    ciphertext = data[offset:-32]
+
+    # Legacy used 480,000 iterations for the encryption key, separate
+    # 1,000-iter key for the MAC.
     key = derive_key(passphrase, salt, iterations=480_000)
-    expected = hmac.new(key, iv + ciphertext, hashlib.sha256).digest()
+    mac_key = derive_key(passphrase, salt + b"mac", iterations=1_000)
+
+    expected = hmac.new(mac_key, salt + iv + ciphertext, hashlib.sha256).digest()
     if not hmac.compare_digest(expected, mac):
         raise ValueError("HMAC mismatch — file corrupted or wrong passphrase")
 
+    # CTR-mode stream cipher: keystream = HMAC(key, struct.pack("<Q", counter) + iv[:8])
     plaintext = bytearray()
     counter = 0
     pos = 0
     while pos < len(ciphertext):
-        counter_bytes = struct.pack(">Q", counter)
-        keystream = hmac.new(key, iv + counter_bytes, hashlib.sha256).digest()
+        counter_bytes = struct.pack("<Q", counter) + iv[:8]
+        keystream = hmac.new(key, counter_bytes, hashlib.sha256).digest()
         block = ciphertext[pos:pos + 32]
         for i, b in enumerate(block):
             plaintext.append(b ^ keystream[i])
-        pos += 32
         counter += 1
+        pos += 32
 
+    plaintext = bytes(plaintext[:len(ciphertext)])
     with open(output_path, "wb") as fout:
         fout.write(plaintext)
     return {"format": "ECRYPT01_LEGACY", "decrypted_size": len(plaintext)}
@@ -285,26 +300,27 @@ def decrypt_field(value, key: bytes):
 
 
 def _decrypt_field_legacy(value: str, key: bytes) -> str:
-    """v4.0.x encrypt_field format: `enc:<b64(iv||hmac||ct)>`."""
-    payload = base64.b64decode(value[4:])
-    iv = payload[:16]
-    mac = payload[16:48]
-    ct = payload[48:]
-    expected = hmac.new(key, iv + ct, hashlib.sha256).digest()
-    if not hmac.compare_digest(expected, mac):
-        raise ValueError("HMAC mismatch in legacy field decrypt")
+    """v3.5.x / v4.0.x encrypt_field format: `enc:<b64(iv || ciphertext)>`.
+
+    No HMAC at field level (fields were unauthenticated in legacy). 16-byte
+    IV followed directly by ciphertext. Stream cipher is HMAC-SHA256-CTR
+    matching the legacy file format (little-endian counter || iv[:8]).
+    """
+    raw = base64.b64decode(value[4:])
+    iv = raw[:16]
+    ct = raw[16:]
     pt = bytearray()
     counter = 0
     pos = 0
     while pos < len(ct):
-        counter_bytes = struct.pack(">Q", counter)
-        keystream = hmac.new(key, iv + counter_bytes, hashlib.sha256).digest()
+        counter_bytes = struct.pack("<Q", counter) + iv[:8]
+        keystream = hmac.new(key, counter_bytes, hashlib.sha256).digest()
         block = ct[pos:pos + 32]
         for i, b in enumerate(block):
             pt.append(b ^ keystream[i])
-        pos += 32
         counter += 1
-    return pt.decode("utf-8")
+        pos += 32
+    return bytes(pt[:len(ct)]).decode("utf-8")
 
 
 # ---------------------------------------------------------------------------

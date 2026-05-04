@@ -798,8 +798,20 @@ def backup_database(conn, args):
             dst.close()
             src.close()
 
-            from erpclaw_lib.crypto import encrypt_file
-            enc_result = encrypt_file(tmp_path, backup_path, passphrase)
+            from erpclaw_lib.crypto import encrypt_file, wrap_master_key
+            from erpclaw_lib.master_key import master_key_exists, get_or_create_master_key
+
+            # If a column-encryption master key exists on this machine,
+            # wrap it with the backup passphrase and embed in the backup
+            # header. This enables cross-machine restore (the receiving
+            # machine can extract + install the master key via
+            # import-master-key-from-backup).
+            wrapped = None
+            if master_key_exists():
+                wrapped = wrap_master_key(get_or_create_master_key(), passphrase)
+
+            enc_result = encrypt_file(tmp_path, backup_path, passphrase,
+                                       wrapped_master_key=wrapped)
         finally:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
@@ -808,6 +820,7 @@ def backup_database(conn, args):
         size = os.path.getsize(backup_path)
         ok({"backup_path": backup_path, "size_bytes": size,
              "encrypted": True,
+             "carries_master_key": wrapped is not None,
              "original_size": enc_result["original_size"],
              "timestamp": datetime.now(timezone.utc).isoformat()})
     else:
@@ -2140,6 +2153,105 @@ def onboarding_step(conn, args):
 # Action Router
 # ---------------------------------------------------------------------------
 
+def import_master_key_from_backup_action(conn, args):
+    """Extract the wrapped column-encryption master key from a backup file
+    and install it at ~/.config/erpclaw/master.key.
+
+    Use case: cross-machine restore. After a backup taken on Machine A is
+    transferred to Machine B, Machine B has no column-encryption master
+    key and cannot decrypt sensitive fields (employee.ssn, etc.). This
+    action reads the wrapped master key from the backup's ECRYPT02 header,
+    unwraps it with the backup passphrase, and writes it to the standard
+    master-key location on Machine B.
+
+    Required: --backup-path. Passphrase via --passphrase, --passphrase-from-stdin,
+    or --passphrase-from-env <VAR>.
+
+    Refuses to overwrite an existing master key (intentional safety: the
+    user must explicitly delete the existing key first to avoid clobbering
+    encrypted data on the current machine).
+    """
+    backup_path = getattr(args, "backup_path", None)
+    if not backup_path:
+        err("--backup-path is required")
+    if not os.path.isfile(backup_path):
+        err(f"backup file not found: {backup_path}")
+
+    # Resolve passphrase
+    passphrase = None
+    if getattr(args, "passphrase_from_stdin", False):
+        passphrase = sys.stdin.read().strip()
+    elif getattr(args, "passphrase_from_env", None):
+        passphrase = os.environ.get(args.passphrase_from_env)
+        if not passphrase:
+            err(f"env var {args.passphrase_from_env} is empty or unset")
+    elif getattr(args, "passphrase", None):
+        passphrase = args.passphrase
+    else:
+        err(
+            "passphrase required: --passphrase <pw> (avoid in shared shell history), "
+            "--passphrase-from-stdin (recommended for automation), or "
+            "--passphrase-from-env <VAR>"
+        )
+    if not passphrase:
+        err("passphrase is empty")
+
+    # Read just the ECRYPT02 header to extract wrapped master key
+    from erpclaw_lib.crypto import _unpack_header_v2, unwrap_master_key, ECRYPT02_MAGIC
+    try:
+        with open(backup_path, "rb") as fh:
+            magic_peek = fh.read(len(ECRYPT02_MAGIC))
+            if magic_peek != ECRYPT02_MAGIC:
+                err(
+                    f"backup is not an ECRYPT02-format file (does not carry a "
+                    f"wrapped master key). Got magic {magic_peek!r}. Legacy "
+                    f"ECRYPT01 backups do not embed master keys; export the "
+                    f"master key from the source machine manually."
+                )
+            fh.seek(0)
+            iterations, salt, nonce_prefix, wrapped = _unpack_header_v2(fh)
+    except Exception as exc:
+        err(f"failed to read backup header: {exc}")
+
+    if not wrapped:
+        err(
+            "backup does not carry a wrapped master key. The source machine "
+            "either had no master key when the backup was taken, or the backup "
+            "was created with a foundation version older than v4.1.3."
+        )
+
+    # Unwrap with passphrase
+    try:
+        master_key = unwrap_master_key(wrapped, passphrase)
+    except Exception:
+        err("passphrase did not match the wrapping passphrase used at backup time")
+
+    # Install
+    from erpclaw_lib.master_key import master_key_exists, import_master_key, MASTER_KEY_PATH
+    force = getattr(args, "force", False)
+    if master_key_exists() and not force:
+        err(
+            f"a master key already exists at {MASTER_KEY_PATH}. Refusing to "
+            f"overwrite without --force. If you are sure the new key replaces "
+            f"the existing one (e.g., the existing key is from an unrelated "
+            f"install), pass --force. WARNING: overwriting will make existing "
+            f"encrypted data unreadable if it was encrypted with the old key."
+        )
+
+    try:
+        if force and master_key_exists():
+            os.remove(MASTER_KEY_PATH)
+        import_master_key(master_key)
+    except Exception as exc:
+        err(f"failed to install master key: {exc}")
+
+    ok({
+        "message": "Master key extracted from backup and installed.",
+        "master_key_path": MASTER_KEY_PATH,
+        "next": "run restore-database to restore the data; encrypted columns will now be readable",
+    })
+
+
 def set_credential_action(conn, args):
     """Store an integration credential in the encrypted credentials file.
 
@@ -2259,6 +2371,7 @@ ACTIONS = {
     "list-credentials": list_credentials_action,
     "delete-credential": delete_credential_action,
     "migrate-credentials": migrate_credentials_action,
+    "import-master-key-from-backup": import_master_key_from_backup_action,
     "setup-company": setup_company,
     "update-company": update_company,
     "get-company": get_company,
@@ -2319,6 +2432,13 @@ def main():
                         help="Read credential value from named env var")
     parser.add_argument("--dry-run", action="store_true",
                         help="Preview migrate-credentials without writing")
+
+    # import-master-key-from-backup flags
+    # (--backup-path and --passphrase reuse the backup-database flags above)
+    parser.add_argument("--passphrase-from-stdin", action="store_true",
+                        help="Read passphrase from stdin (recommended for automation)")
+    parser.add_argument("--passphrase-from-env", default=None,
+                        help="Read passphrase from named env var")
 
     # Company flags
     parser.add_argument("--name", default=None)
