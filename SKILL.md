@@ -1,6 +1,6 @@
 ---
 name: erpclaw
-version: 4.1.5
+version: 4.1.6
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
@@ -193,9 +193,9 @@ High-impact actions require the `--user-confirmed` flag on every invocation. The
 | `validate-module` / `list-articles` / `build-table-registry` | Constitution + module discovery (read-only) |
 | `schema-plan` / `schema-apply` / `schema-rollback` / `schema-drift` | Schema migration (apply/rollback require user approval) |
 | `regenerate-skill-md` | Regenerate SKILL.md |
-| `update-foundation` / `rollback-foundation` | Reconcile installed foundation files with the published manifest; both require user approval |
+| `update-foundation` / `rollback-foundation` / `verify-trust-root` | Reconcile installed foundation files with the published manifest; reconcile actions require user approval |
 
-> **Foundation reconciliation.** Two user-invoked actions keep an installed foundation aligned with the published manifest in `module_registry.json`. `update-foundation --user-confirmed` compares each installed file's SHA256 against the manifest, and for any drift, replaces the file from the published source after re-verifying the declared hash; a pre-flight verifies all replacements before any rename, so a hash failure leaves the install unchanged. Each replaced file is preserved as `.bak` for one cycle, and `rollback-foundation --user-confirmed` reverts that cycle. A periodic convenience check, suppressed by the marker file `~/.openclaw/erpclaw/.skip_reconcile` or the per-invocation flag `--no-reconcile-check`, may surface a reminder when version drift is present; the user runs `update-foundation` to apply. The router never modifies installed code without an explicit gated invocation.
+> **Foundation reconciliation.** Reconciliation verifies an ed25519 signature on the registry against an embedded public key before trusting any file hash. Two user-invoked actions keep an installed foundation aligned with the published manifest in `module_registry.json`. `update-foundation --user-confirmed` compares each installed file's SHA256 against the signed manifest, and for any drift, replaces the file from the published source after re-verifying the declared hash; a pre-flight verifies all replacements before any rename, so a hash failure leaves the install unchanged. Each replaced file is preserved as `.bak` for one cycle, and `rollback-foundation --user-confirmed` reverts that cycle. `verify-trust-root` prints the embedded key fingerprint for out-of-band verification. A periodic convenience check, suppressed by the marker file `~/.openclaw/erpclaw/.skip_reconcile` or the per-invocation flag `--no-reconcile-check`, may surface a reminder when version drift is present; the user runs `update-foundation` to apply. The router never modifies installed code without an explicit gated invocation. Signature verification is mandatory on the reconciliation path; the only exception is a documented operator recovery path that records to the audit log.
 
 > **Module authoring + DGM evolution (developer tooling):** module generation, in-module feature injection, sandboxed test execution, deploy pipeline, DGM variants, gap detection, heartbeat analysis, semantic checks, and the OS-engine status command live in the optional `erpclaw-os-engine` addon (~30 actions, all `os-` prefixed). The addon is GitHub-only and not installed by default. Install via `module_manager.py --action install-module --module-name erpclaw-os-engine`. Foundation does not run module-generation or auto-deploy code paths.
 

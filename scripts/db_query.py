@@ -627,13 +627,13 @@ MODULE_ACTIONS = {
     "list-modules", "available-modules", "module-status",
     "search-modules", "rebuild-action-cache", "list-all-actions",
     "regenerate-skill-md",
-    "update-foundation", "rollback-foundation",
+    "update-foundation", "rollback-foundation", "verify-trust-root",
 }
 
 # Actions that touch foundation install state; sync hook MUST skip these
 # to avoid re-entering update during their own execution.
 SYNC_RECURSION_GUARD = frozenset({
-    "update-foundation", "rollback-foundation",
+    "update-foundation", "rollback-foundation", "verify-trust-root",
     "install-module", "remove-module", "update-modules",
     "schema-apply", "schema-rollback",
 })

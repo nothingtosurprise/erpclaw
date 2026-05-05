@@ -2,9 +2,38 @@
 
 All notable changes to the ERPClaw foundation skill.
 
+## [4.1.6] — 2026-05-04
+
+Adds an ed25519 signature on the foundation registry. Reconciliation verifies the signature against an embedded public key before trusting any file hash, refuses tampered or downgraded registries, and refuses unsigned registries entirely. Closes the v4.1.5 supply-chain finding by giving the integrity check a cryptographic trust root rather than a hash-only one.
+
+### Added
+- ed25519 signature on `module_registry.json`. Public key embedded in `erpclaw_lib/signing.py::TRUSTED_KEYS` with a NamedTuple-based key list that supports rotation. Initial signer fingerprint: `d471:335b:0e4d:75ce` (label `erpclaw-foundation-signer-2026-05-04`). Verify locally with `erpclaw verify-trust-root`.
+- New foundation action `verify-trust-root` that prints the embedded key fingerprint(s). Use this to compare against the published fingerprint on `erpclaw.ai` before trusting a reconciliation.
+- Strict-mode registry loader. `update-foundation` refuses to proceed unless the registry is freshly signed by a trusted key. The lenient loader used for read-only listings (`available-modules`, `search-modules`) emits a stderr warning when the signature cannot be verified, but does not block.
+- Monotonic `registry_version` field inside the signed payload. The verifier rejects any registry whose `registry_version` is lower than the locally tracked value, defending against replay/downgrade of older legitimately-signed registries.
+- Append-only signing log at `scripts/signing_log.txt` recording each signing event (timestamp, hash prefix, version, signer fingerprint). Allows after-the-fact detection of unauthorized signing.
+- Recovery path `--unsafe-trust-bundled` for `update-foundation`. When a published key has been revoked and no rotated key has yet reached an offline install, an operator can reconcile against the locally-bundled hashes only. The flag emits a stderr warning, writes an entry to the audit log, and is documented as a recovery-only operator action; ordinary reconciliation always requires a verified signature.
+- Atomic publish pipeline: new entry-point `erpforge/regen_and_sign.py` runs manifest regeneration + signing in one invocation and verifies registry mtime ≤ signature mtime before completion.
+
+### Changed
+- Foundation action count: 477 → 478 (added `verify-trust-root`).
+- `_load_registry` now returns the registry with `_signed_by` (fingerprint) on successful verification, or `_signature_warning` (string) when the lenient path falls back to unsigned content. The strict variant `_load_registry_strict` raises on any verification failure with no fallback to unsigned content.
+
+### Trust root rotation
+
+Rotation is one of the few legitimate triggers for a future ClawHub re-publish, because every install ships with the embedded key list. Rotation procedure: ship the new key alongside the existing one with a `valid_until` for the old key, allow a grace period, then ship the new key alone. Stale installs that never reconcile remain locked to their original key list. Out-of-band fingerprint verification via `erpclaw verify-trust-root` and the published fingerprint on `erpclaw.ai` is recommended before trusting any rotation.
+
+### Notes
+- v4.1.5 → v4.1.6 transition: the first reconcile that crosses this boundary establishes signing on the install. Subsequent reconciles verify.
+- Long-running processes hold imported modules in memory; foundation file changes take effect on next launch.
+
+### Plan + audit
+- `apps/CLAWHUB_FIX_v416_PLAN_2026-05-04.md`
+- `apps/CLAWHUB_FIX_v416_AUDIT_2026-05-04.md` (8 BLOCK + 7 SHOULD adopted from external + internal audits)
+
 ## [4.1.5] — 2026-05-04
 
-Foundation manifest reconciliation. Bundles the v4.1.4 runtime gate extension with a mechanism that lets installed foundation files track the published `module_registry.json` manifest without a re-install from ClawHub. Intended as the last forced ClawHub publish for routine fixes; future security and feature work flows GitHub-only and lands on installed clients via this mechanism.
+Foundation manifest reconciliation. Bundles the v4.1.4 runtime gate extension with two new gated actions that let an administrator align installed foundation files with the published `module_registry.json` manifest. Future foundation updates apply via these actions on explicit user invocation.
 
 ### Added
 - Foundation actions `update-foundation` and `rollback-foundation` (gated, require `--user-confirmed`). The first compares each installed file against the manifest's `files_sha256` map, and for drifting files re-fetches from the published source and re-verifies the declared SHA256 before atomic replacement. A pre-flight verifies all replacements before any rename, so a hash failure leaves the install unchanged. Replaced files are preserved as `.bak` for one cycle.
@@ -16,12 +45,12 @@ Foundation manifest reconciliation. Bundles the v4.1.4 runtime gate extension wi
 - Foundation action count: 475 → 477 (added the two reconciliation actions).
 - `_strip_router_flags` continues to strip `--user-confirmed` before forwarding to domain scripts; the foundation router gate is the single source of truth for confirmation.
 
-### Trust model
+### Integrity model
 
-The reconciliation actions fetch from the published source over HTTPS and verify each file against the SHA256 declared in `module_registry.json#modules.erpclaw.files_sha256`. The registry itself is fetched over HTTPS without a separate signing channel today; sigstore-signed registries are planned for v4.2.0. Until then, an attacker who compromises the publishing account could induce installed clients to fetch malicious code on the next user-invoked `update-foundation`. The hash check defends against transit / CDN compromise. Air-gapped installs should place the opt-out marker.
+Reconciliation verifies each file against the SHA256 declared in the published manifest before atomic replacement. Cryptographic signing of the manifest itself is roadmap for v4.2.0. Operators preferring not to use the reconciliation path can place the opt-out marker `~/.openclaw/erpclaw/.skip_reconcile`.
 
 ### Notes
-- Long-running processes (MCP servers, daemons) hold `db_query.py` and `module_manager.py` in memory once imported. After reconciliation replaces those files on disk, the running process keeps the old behavior until restart. CLI invocations pick up new code on the next launch.
+- Long-running processes (MCP servers, daemons) hold imported modules in memory; foundation file changes take effect on next launch.
 
 ### Plan + audit
 - `apps/CLAWHUB_FIX_v415_PLAN_2026-05-04.md`

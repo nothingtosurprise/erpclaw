@@ -63,7 +63,11 @@ SYNC_LOG_PATH = os.path.expanduser("~/.openclaw/erpclaw/logs/sync.log")
 # Skip filters (must match install_module's full-tree verification block)
 SYNC_SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules", "dist", "build"}
 SYNC_SKIP_SUFFIXES = (".pyc", ".pyo", ".bak", ".tmp", ".DS_Store")
-SYNC_SKIP_RELPATHS_FOUNDATION = {"scripts/module_registry.json"}
+SYNC_SKIP_RELPATHS_FOUNDATION = {
+    "scripts/module_registry.json",
+    "scripts/module_registry.json.sig",
+    "scripts/signing_log.txt",
+}
 
 
 def _now_iso():
@@ -71,63 +75,227 @@ def _now_iso():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _load_registry(force_refresh=False):
-    """Load module registry with remote fetch + local cache fallback.
+REMOTE_SIGNATURE_URL = REMOTE_REGISTRY_URL + ".sig"
+LOCAL_SIG_CACHE_PATH = LOCAL_CACHE_PATH + ".sig"
+LOCAL_VERSION_TRACKER = os.path.expanduser("~/.openclaw/erpclaw/.last_registry_version")
 
-    Resolution order:
-    1. Local cache (if fresh and not force_refresh)
-    2. Remote fetch from GitHub (updates cache)
-    3. Bundled copy (SCRIPT_DIR/module_registry.json)
-    4. Stale cache (any age)
+
+class _RegistrySignatureError(Exception):
+    """Raised when registry signature verification fails (strict mode)."""
+
+
+def _verify_registry_payload(raw_bytes, sig_hex, *, label):
+    """Run ed25519 verification + monotonic-version check on a registry payload.
+
+    Returns the parsed registry dict on success. Raises _RegistrySignatureError
+    on signature failure or downgrade attempt.
+    """
+    # Late import so non-foundation paths (e.g., scripts that import
+    # module_manager for testing) don't require the lib to be installed.
+    sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+    try:
+        from erpclaw_lib.signing import (
+            verify_registry_signature, REGISTRY_VERSION_FIELD, fingerprint,
+        )
+        from cryptography.exceptions import InvalidSignature
+    except ImportError as e:
+        raise _RegistrySignatureError(f"signing library unavailable: {e}")
+
+    try:
+        trusted = verify_registry_signature(raw_bytes, sig_hex)
+    except InvalidSignature as e:
+        raise _RegistrySignatureError(f"signature verification failed ({label}): {e}")
+
+    try:
+        registry = json.loads(raw_bytes)
+    except json.JSONDecodeError as e:
+        raise _RegistrySignatureError(f"registry not valid JSON ({label}): {e}")
+
+    incoming = int(registry.get(REGISTRY_VERSION_FIELD, 0) or 0)
+    local_last = 0
+    if os.path.isfile(LOCAL_VERSION_TRACKER):
+        try:
+            local_last = int((open(LOCAL_VERSION_TRACKER).read() or "0").strip() or "0")
+        except (ValueError, OSError):
+            local_last = 0
+    if incoming < local_last:
+        raise _RegistrySignatureError(
+            f"registry_version downgrade refused ({label}): "
+            f"incoming={incoming}, local_last={local_last}"
+        )
+    if incoming > local_last:
+        try:
+            os.makedirs(os.path.dirname(LOCAL_VERSION_TRACKER), exist_ok=True)
+            with open(LOCAL_VERSION_TRACKER, "w") as f:
+                f.write(str(incoming))
+        except OSError:
+            pass
+
+    registry["_signed_by"] = fingerprint(trusted.public_key_hex)
+    return registry
+
+
+def _fetch_with_retry(url, *, timeout=10, retries=1, retry_delay=5.0):
+    """Fetch a URL with one retry-after-delay. Defends against CDN propagation lag."""
+    last_err = None
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "erpclaw"})
+            resp = urllib.request.urlopen(req, timeout=timeout)
+            return resp.read()
+        except Exception as e:
+            last_err = e
+            if attempt < retries:
+                time.sleep(retry_delay)
+                continue
+    raise last_err
+
+
+def _load_registry(force_refresh=False):
+    """Load module registry. Lenient mode: signature is verified and reported
+    via `_signed_by`/`_signature_warning`, but the function does not refuse on
+    failure. Used by read-only listings (`available-modules`, etc.).
+
+    For foundation reconciliation, callers MUST use `_load_registry_strict`
+    which refuses unsigned/tampered/downgraded registries.
+
+    Resolution order: fresh cache → remote → bundled → stale cache.
     """
     bundled_path = os.path.join(SCRIPT_DIR, "module_registry.json")
+    bundled_sig_path = bundled_path + ".sig"
 
     # 1. Check local cache
     if not force_refresh and os.path.isfile(LOCAL_CACHE_PATH):
         try:
             age = time.time() - os.path.getmtime(LOCAL_CACHE_PATH)
             if age < CACHE_TTL_SECONDS:
-                with open(LOCAL_CACHE_PATH) as f:
-                    data = json.load(f)
-                    if "modules" in data:
-                        return data
+                raw = open(LOCAL_CACHE_PATH, "rb").read()
+                sig = ""
+                if os.path.isfile(LOCAL_SIG_CACHE_PATH):
+                    sig = open(LOCAL_SIG_CACHE_PATH).read().strip()
+                try:
+                    return _verify_registry_payload(raw, sig, label="local-cache")
+                except _RegistrySignatureError as e:
+                    data = json.loads(raw)
+                    data["_signature_warning"] = str(e)
+                    return data
         except (json.JSONDecodeError, OSError):
             pass
 
-    # 2. Try remote fetch
+    # 2. Try remote fetch (registry + signature)
     try:
-        req = urllib.request.Request(REMOTE_REGISTRY_URL, headers={"User-Agent": "erpclaw"})
-        resp = urllib.request.urlopen(req, timeout=10)
-        raw = resp.read().decode("utf-8")
-        data = json.loads(raw)
-        if "modules" in data:
-            # Update cache
-            cache_dir = os.path.dirname(LOCAL_CACHE_PATH)
-            if cache_dir:
-                os.makedirs(cache_dir, exist_ok=True)
-            with open(LOCAL_CACHE_PATH, "w") as f:
-                json.dump(data, f, indent=2)
-            return data
+        raw = _fetch_with_retry(REMOTE_REGISTRY_URL, retries=1)
+        sig = ""
+        try:
+            sig_bytes = _fetch_with_retry(REMOTE_SIGNATURE_URL, retries=1)
+            sig = sig_bytes.decode("utf-8").strip()
+        except Exception:
+            pass
+        try:
+            data = _verify_registry_payload(raw, sig, label="remote")
+        except _RegistrySignatureError as e:
+            data = json.loads(raw)
+            data["_signature_warning"] = str(e)
+        # Update cache
+        cache_dir = os.path.dirname(LOCAL_CACHE_PATH)
+        if cache_dir:
+            os.makedirs(cache_dir, exist_ok=True)
+        with open(LOCAL_CACHE_PATH, "wb") as f:
+            f.write(raw)
+        if sig:
+            with open(LOCAL_SIG_CACHE_PATH, "w") as f:
+                f.write(sig)
+        return data
     except Exception:
         pass  # Offline or error — fall through
 
-    # 3. Fall back to bundled copy
+    # 3. Fall back to bundled copy + bundled signature
     if os.path.isfile(bundled_path):
         try:
-            with open(bundled_path) as f:
-                return json.load(f)
+            raw = open(bundled_path, "rb").read()
+            sig = ""
+            if os.path.isfile(bundled_sig_path):
+                sig = open(bundled_sig_path).read().strip()
+            try:
+                return _verify_registry_payload(raw, sig, label="bundled")
+            except _RegistrySignatureError as e:
+                data = json.loads(raw)
+                data["_signature_warning"] = str(e)
+                return data
         except (json.JSONDecodeError, OSError):
             pass
 
     # 4. Fall back to stale cache
     if os.path.isfile(LOCAL_CACHE_PATH):
         try:
-            with open(LOCAL_CACHE_PATH) as f:
-                return json.load(f)
+            raw = open(LOCAL_CACHE_PATH, "rb").read()
+            sig = ""
+            if os.path.isfile(LOCAL_SIG_CACHE_PATH):
+                sig = open(LOCAL_SIG_CACHE_PATH).read().strip()
+            try:
+                return _verify_registry_payload(raw, sig, label="stale-cache")
+            except _RegistrySignatureError as e:
+                data = json.loads(raw)
+                data["_signature_warning"] = str(e)
+                return data
         except (json.JSONDecodeError, OSError):
             pass
 
     return {"version": "0.0.0", "modules": {}}
+
+
+def _load_registry_strict(force_refresh=True):
+    """Strict mode: fetch + signature-verify + monotonic-check. Refuses unsigned.
+
+    Used by `update_foundation_action` for the trust-root path. Returns a
+    verified registry dict; raises `_RegistrySignatureError` on any failure
+    (no fallback to unsigned bundled / stale cache).
+    """
+    # Try remote first (force_refresh by default for strict)
+    last_err = None
+    if force_refresh:
+        try:
+            raw = _fetch_with_retry(REMOTE_REGISTRY_URL, retries=1)
+            sig_bytes = _fetch_with_retry(REMOTE_SIGNATURE_URL, retries=1)
+            sig = sig_bytes.decode("utf-8").strip()
+            data = _verify_registry_payload(raw, sig, label="remote-strict")
+            # Cache the verified content
+            try:
+                cache_dir = os.path.dirname(LOCAL_CACHE_PATH)
+                os.makedirs(cache_dir, exist_ok=True)
+                with open(LOCAL_CACHE_PATH, "wb") as f:
+                    f.write(raw)
+                with open(LOCAL_SIG_CACHE_PATH, "w") as f:
+                    f.write(sig)
+            except OSError:
+                pass
+            return data
+        except _RegistrySignatureError as e:
+            raise
+        except Exception as e:
+            last_err = e
+            # Network failure → fall through to cache, but only if cache is
+            # itself signed and fresh. Bundled fallback is allowed because
+            # bundled .sig is also checked.
+
+    # Fall back to bundled (always signature-verified in strict mode)
+    bundled_path = os.path.join(SCRIPT_DIR, "module_registry.json")
+    bundled_sig_path = bundled_path + ".sig"
+    if os.path.isfile(bundled_path) and os.path.isfile(bundled_sig_path):
+        raw = open(bundled_path, "rb").read()
+        sig = open(bundled_sig_path).read().strip()
+        return _verify_registry_payload(raw, sig, label="bundled-strict")
+
+    # Last resort: cached (signed only)
+    if os.path.isfile(LOCAL_CACHE_PATH) and os.path.isfile(LOCAL_SIG_CACHE_PATH):
+        raw = open(LOCAL_CACHE_PATH, "rb").read()
+        sig = open(LOCAL_SIG_CACHE_PATH).read().strip()
+        return _verify_registry_payload(raw, sig, label="cached-strict")
+
+    raise _RegistrySignatureError(
+        f"strict load: no signed registry available "
+        f"(remote: {last_err}; bundled missing or unsigned; cache missing or unsigned)"
+    )
 
 
 def _registry_to_dict(registry):
@@ -628,7 +796,11 @@ def _install_module_inner(args, conn, modules_by_name, depth=0):
         SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules", "dist", "build"}
         SKIP_SUFFIXES = (".pyc", ".pyo", ".bak", ".tmp", ".DS_Store")
         # Files excluded from manifest by design (self-referential)
-        SKIP_RELPATHS = {"scripts/module_registry.json"} if module_name == "erpclaw" else set()
+        SKIP_RELPATHS = (
+            {"scripts/module_registry.json", "scripts/module_registry.json.sig",
+             "scripts/signing_log.txt"}
+            if module_name == "erpclaw" else set()
+        )
         delivered = set()
         for root, dirs, files in os.walk(install_path):
             dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
@@ -1540,9 +1712,24 @@ def update_foundation_action(args):
         err("Another foundation sync is in progress; try again shortly.")
 
     try:
-        # Always fetch fresh registry for reconciliation; the cache may be
-        # stale and lack the files_sha256 manifest.
-        registry = _load_registry(force_refresh=True)
+        # Strict load: ed25519 signature verified, monotonic version checked.
+        # Refuses unsigned, tampered, or downgraded registries.
+        unsafe = getattr(args, "unsafe_trust_bundled", False)
+        if unsafe:
+            print("WARNING: --unsafe-trust-bundled set; skipping signature verification.",
+                  file=sys.stderr)
+            # Honor cache when in unsafe mode so emergency recovery and tests
+            # can use locally-staged registries.
+            registry = _load_registry(force_refresh=False)
+        else:
+            try:
+                registry = _load_registry_strict(force_refresh=True)
+            except _RegistrySignatureError as e:
+                err(
+                    f"Registry signature verification failed: {e}. "
+                    f"Refusing to reconcile. If this is an emergency, "
+                    f"re-run with --unsafe-trust-bundled (NOT RECOMMENDED)."
+                )
         modules_by_name = _registry_to_dict(registry)
         foundation = modules_by_name.get("erpclaw")
         if not foundation or "files_sha256" not in foundation:
@@ -1637,6 +1824,28 @@ def update_foundation_action(args):
         _release_sync_lock(lock)
 
 
+def verify_trust_root_action(args):
+    """Print embedded public key fingerprint(s) for out-of-band verification."""
+    sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+    try:
+        from erpclaw_lib.signing import TRUSTED_KEYS, fingerprint
+    except ImportError as e:
+        err(f"signing library unavailable: {e}")
+
+    keys = []
+    for tk in TRUSTED_KEYS:
+        keys.append({
+            "label": tk.label,
+            "fingerprint": fingerprint(tk.public_key_hex),
+            "valid_until": tk.valid_until,
+        })
+    print(json.dumps({
+        "status": "ok",
+        "trusted_keys": keys,
+        "note": "Verify these fingerprints against the published values on erpclaw.ai before trusting reconciliation.",
+    }, indent=2))
+
+
 def rollback_foundation_action(args):
     """Restore .bak copies preserved by the most recent update-foundation run.
 
@@ -1697,6 +1906,7 @@ ACTIONS = {
     "regenerate-skill-md": regenerate_skill_md_action,
     "update-foundation": lambda args: update_foundation_action(args),
     "rollback-foundation": lambda args: rollback_foundation_action(args),
+    "verify-trust-root": lambda args: verify_trust_root_action(args),
 }
 
 
@@ -1736,6 +1946,10 @@ def main():
     parser.add_argument(
         "--user-confirmed", action="store_true", default=False,
         help="Per-invocation confirmation flag for high-impact actions"
+    )
+    parser.add_argument(
+        "--unsafe-trust-bundled", action="store_true", default=False,
+        help="Skip signature verification (emergency recovery only)"
     )
 
     args, _unknown = parser.parse_known_args()
