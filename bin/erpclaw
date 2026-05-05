@@ -31,10 +31,20 @@ import sys
 from pathlib import Path
 
 
+# CLAWHUB_HOME is the erpclaw data directory (lib, modules, backups, data.sqlite,
+# logs). It is NOT where skills are installed; OpenClaw puts skills at a
+# separate workspace path (typically ~/.openclaw/workspace/skills/<skill>/).
 DEFAULT_HOME = Path(os.path.expanduser("~/.openclaw/erpclaw"))
 CLAWHUB_HOME = Path(os.environ.get("CLAWHUB_HOME", str(DEFAULT_HOME)))
-SKILLS_DIR = CLAWHUB_HOME / "skills"
 ACTION_MAP_CACHE = CLAWHUB_HOME / "action_map.json"
+
+# Self-locate the skill install root from this script's own path. The shim
+# ships at <skill_root>/bin/erpclaw, so __file__'s grandparent is the skill
+# root, and its parent is the directory holding all installed skills. This
+# is robust to whatever absolute path OpenClaw uses for its workspace.
+_THIS_FILE = Path(__file__).resolve()
+SKILL_ROOT = _THIS_FILE.parent.parent
+SKILLS_DIR = SKILL_ROOT.parent
 
 # Match kebab-case action names that appear in backticks in SKILL.md tables.
 # Requires at least one hyphen (actions are always verb-object) and all
@@ -111,14 +121,21 @@ def cmd_list() -> int:
 
 
 def cmd_version() -> int:
-    core_skill = SKILLS_DIR / "erpclaw" / "SKILL.md"
+    """Print the foundation erpclaw version as recorded in its SKILL.md frontmatter.
+
+    Reads from the shim's own skill (SKILL_ROOT/SKILL.md), which is the
+    canonical version source: SKILL.md is part of the signed manifest the
+    foundation reconciliation pipeline keeps in sync, so this stays accurate
+    across update-foundation invocations without any extra refresh step.
+    """
+    core_skill = SKILL_ROOT / "SKILL.md"
     if core_skill.exists():
         content = core_skill.read_text(encoding="utf-8", errors="ignore")
         match = re.search(r"^version:\s*(\S+)", content, re.MULTILINE)
         if match:
             print(f"erpclaw {match.group(1)}")
             return 0
-    print(f"erpclaw (version unknown; install root: {CLAWHUB_HOME})")
+    print(f"erpclaw (version unknown; SKILL.md not found at {core_skill})")
     return 0
 
 

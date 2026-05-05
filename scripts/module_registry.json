@@ -513,7 +513,7 @@
         "README.md": "8e662b3fdee0514f98287672752a567f63a5e5d505a62213d53e73dd8107b5c7",
         "SKILL.md": "f92f4b9aae492cb78d57afaf54be4afc286dbd8fc6f91d263d3003822f93dc40",
         "UI.yaml": "7c7062cdbc7877a3daa5b22dc6b4e296ce0b1dad7cdf615fd0ddcf0f278b581c",
-        "bin/erpclaw": "4661daa0f964cc4878401a433782dc509741d9d9b9a4ef1e511eae8e84897eea",
+        "bin/erpclaw": "a12d6e49943854124a3d233e191039b592856e9150ebb6c284d99b85992c6baa",
         "scripts/db_query.py": "101a31e61a1106cd88371bcda41ad289b9bad50349b78fd1bb178d9347faa4ae",
         "scripts/erpclaw-accounting-adv/consolidation.py": "724f2e78bd8818f21375b18d23e519762bcd399733b0771c70daaa27a67df846",
         "scripts/erpclaw-accounting-adv/db_query.py": "a29e60351ef2b18671a9f196281ce4bd4b7dd9909cd6cb4f95d88a190fe2ec50",
@@ -2345,8 +2345,8 @@
       "version": "1.0.0"
     }
   },
-  "registry_version": 5,
-  "signed_at": "2026-05-05T04:46:16Z",
+  "registry_version": 6,
+  "signed_at": "2026-05-05T06:35:15Z",
   "total_actions": 3135,
   "version": "4.1.6"
 }
