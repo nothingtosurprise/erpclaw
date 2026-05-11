@@ -5190,10 +5190,11 @@ def main():
     parser.add_argument("--primary-contact")
 
     # Dunning / credit policy fields (S1).
-    # --template-id, --description, --limit already declared elsewhere; reused.
+    # --template-id, --limit already declared elsewhere; reused.
     parser.add_argument("--level", type=int)
     parser.add_argument("--days-overdue", type=int)
     parser.add_argument("--dunning-action", dest="dunning_action")
+    parser.add_argument("--description")
     parser.add_argument("--run-date")
 
     # Common fields

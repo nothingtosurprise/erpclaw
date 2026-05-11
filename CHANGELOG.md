@@ -2,6 +2,11 @@
 
 All notable changes to the ERPClaw foundation skill.
 
+## [4.3.1] — 2026-05-11
+
+### Fixed
+- `erpclaw-selling/db_query.py` main(): re-add `--description` argparse flag that was incorrectly removed as a dupe during v4.3.0 (it's used by `add-dunning-level`). Server smoke caught: `Unknown flags: --description` on first invocation.
+
 ## [4.3.0] — 2026-05-11
 
 Customer credit limit + dunning levels (ROADMAP S1). B2B AR depth: enforce credit limits at invoice submit and run automated dunning escalation cycles.
