@@ -32,7 +32,7 @@ import argparse
 import os
 import sqlite3
 
-DEFAULT_DB_PATH = os.path.expanduser("~/.openclaw/erpclaw/data.sqlite")
+DEFAULT_DB_PATH = os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "data.sqlite")
 
 # (table, column). Nullable, no DEFAULT, plain TEXT (opaque reference — see ADR-0023
 # + the docstring note on SQLite forward-FK INSERT resolution).

@@ -18,7 +18,7 @@ OS_DIR = os.path.dirname(SCRIPT_DIR)
 if OS_DIR not in sys.path:
     sys.path.insert(0, OS_DIR)
 
-sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
 from erpclaw_lib.db import setup_pragmas
 
 from schema_diff import (
@@ -82,7 +82,7 @@ def module_dir(tmp_path):
     init_db.write_text('''#!/usr/bin/env python3
 """Test module schema."""
 import sqlite3, sys, os
-DEFAULT_DB_PATH = os.path.expanduser("~/.openclaw/erpclaw/data.sqlite")
+DEFAULT_DB_PATH = os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "data.sqlite")
 def create_module_tables(db_path=None):
     db_path = db_path or DEFAULT_DB_PATH
     conn = sqlite3.connect(db_path)

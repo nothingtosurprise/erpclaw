@@ -1,6 +1,6 @@
 ---
 name: erpclaw
-version: 4.9.0
+version: 4.10.0
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
@@ -11,7 +11,7 @@ homepage: https://github.com/avansaber/erpclaw
 source: https://github.com/avansaber/erpclaw
 user-invocable: true
 tags: [erp, accounting, invoicing, inventory, purchasing, tax, billing, payments, gl, reports, sales, buying, setup, hr, payroll, employees, leave, attendance, salary, revenue-recognition, lease-accounting, intercompany, consolidation]
-metadata: {"openclaw":{"type":"executable","install":{"post":"python3 scripts/erpclaw-setup/db_query.py --action initialize-database"},"requires":{"bins":["python3","git"],"env":[],"optionalEnv":["ERPCLAW_DB_PATH"]},"os":["darwin","linux"]}}
+metadata: {"openclaw":{"type":"executable","install":{"post":"python3 scripts/erpclaw-setup/db_query.py --action initialize-database"},"requires":{"bins":["python3","git"],"env":[],"optionalEnv":["ERPCLAW_DB_PATH"]},"os":["darwin","linux"]},"hermes":{"category":"productivity","config":[{"key":"erpclaw.home","description":"ERPClaw install root; lib, install-state, and the default SQLite DB resolve under it. Unset/blank defaults to ~/.openclaw/erpclaw (byte-identical to OpenClaw).","default":"${ERPCLAW_HOME}","prompt":"ERPClaw home directory (blank = ~/.openclaw/erpclaw)"}]}}
 ---
 
 # erpclaw
@@ -19,6 +19,8 @@ metadata: {"openclaw":{"type":"executable","install":{"post":"python3 scripts/er
 **Full-Stack ERP Controller** for ERPClaw. Company setup, chart of accounts, journal entries, payments, tax, financial reports, customers, sales, suppliers, purchasing, inventory, billing, HR, US payroll, advanced accounting (ASC 606/842, intercompany, consolidation), and 45 optional industry modules. Local-first SQLite, double-entry GL, immutable audit trail.
 
 **Security:** Local-first. Parameterized queries. RBAC (PBKDF2). Immutable GL. Sensitive fields encrypted at the column level. Network access limited to `fetch-exchange-rates` (public API) and user-approved `install-module` from `github.com/avansaber/*`.
+
+**Runtimes:** Runs on OpenClaw (primary). Experimental support for the Hermes Agent runtime via a GitHub tap. Install root is set by the `ERPCLAW_HOME` environment variable; unset/blank defaults to `~/.openclaw/erpclaw` (zero behavior change for OpenClaw).
 
 ## System of record (the ERP is authoritative)
 

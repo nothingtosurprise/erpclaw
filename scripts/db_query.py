@@ -19,8 +19,15 @@ import time
 from uuid import uuid4
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODULES_DIR = os.path.expanduser("~/.openclaw/erpclaw/modules")
-DB_PATH = os.path.expanduser("~/.openclaw/erpclaw/data.sqlite")
+# Install paths resolve through the single ERPCLAW_HOME point of truth
+# (ADR-0017). The router is a pure os.execvp dispatcher that deliberately avoids
+# importing erpclaw_lib (the bundled-lib path below is only inserted when the
+# dev-tree lib exists), so these reproduce the resolver's logic inline rather
+# than importing it — equivalent to erpclaw_lib.paths.modules_dir()/db_default().
+# With ERPCLAW_HOME unset they equal today's ~/.openclaw/erpclaw literals exactly.
+_ERPCLAW_HOME = os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw"))
+MODULES_DIR = os.path.join(_ERPCLAW_HOME, "modules")
+DB_PATH = os.path.join(_ERPCLAW_HOME, "data.sqlite")
 BUNDLED_LIB = os.path.join(BASE_DIR, "erpclaw-setup", "lib")
 if os.path.isdir(os.path.join(BUNDLED_LIB, "erpclaw_lib")):
     sys.path.insert(0, BUNDLED_LIB)

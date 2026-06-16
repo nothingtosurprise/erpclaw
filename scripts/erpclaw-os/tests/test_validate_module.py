@@ -351,7 +351,7 @@ class TestArticle5:
         scripts_dir.mkdir()
         (scripts_dir / "db_query.py").write_text(textwrap.dedent("""\
             import os, sys, json, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
 
             def add_item(conn):
@@ -387,7 +387,7 @@ class TestArticle6:
         scripts_dir.mkdir()
         (scripts_dir / "db_query.py").write_text(textwrap.dedent("""\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             from erpclaw_lib.gl_posting import insert_gl_entries
 
@@ -430,7 +430,7 @@ class TestArticle7:
         # handler.py imports ok/err
         (scripts_dir / "handler.py").write_text(textwrap.dedent("""\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
 
             def handle():

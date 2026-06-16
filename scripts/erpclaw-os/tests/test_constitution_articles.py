@@ -91,7 +91,7 @@ def _make_valid_module(base_dir, name="testclaw", tables=None, actions=None,
     if db_query_code is None:
         db_query_code = textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def main():
                 ok({"message": "ok"})
@@ -517,7 +517,7 @@ class TestArticle5_NoCrossModuleWrites:
         """
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def add(conn):
                 conn.execute("INSERT INTO own_record (id, name) VALUES (?, ?)", ("1", "x"))
@@ -532,7 +532,7 @@ class TestArticle5_NoCrossModuleWrites:
         """SELECT from core tables is allowed (reads are fine)."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def list_customers(conn):
                 rows = conn.execute("SELECT id, name FROM customer WHERE company_id = ?", ("c1",)).fetchall()
@@ -546,7 +546,7 @@ class TestArticle5_NoCrossModuleWrites:
         """INSERT INTO customer (core table) is caught."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def bad_write(conn):
                 conn.execute("INSERT INTO customer (id, name) VALUES (?, ?)", ("1", "bad"))
@@ -563,7 +563,7 @@ class TestArticle5_NoCrossModuleWrites:
         """UPDATE on core table is caught."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def bad_update(conn):
                 conn.execute("UPDATE account SET balance = '0' WHERE id = ?", ("a1",))
@@ -596,7 +596,7 @@ class TestArticle6_NoDirectGLWrites:
         """Module using erpclaw_lib.gl_posting (not direct INSERT) passes."""
         db_code = textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             from erpclaw_lib.gl_posting import insert_gl_entries
             def post(conn, entries):
@@ -617,7 +617,7 @@ class TestArticle6_NoDirectGLWrites:
         """INSERT INTO gl_entry is caught."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def bad_post(conn):
                 conn.execute("INSERT INTO gl_entry (id, account_id) VALUES (?, ?)", ("1", "a"))
@@ -632,7 +632,7 @@ class TestArticle6_NoDirectGLWrites:
         """INSERT INTO stock_ledger_entry is caught."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def bad_stock(conn):
                 conn.execute("INSERT INTO stock_ledger_entry (id, item_id, qty) VALUES (?, ?, ?)", ("1", "i", "5"))
@@ -698,7 +698,7 @@ class TestArticle7_ResponseFormat:
         '''))
         (scripts_dir / "handler.py").write_text(textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def handle():
                 ok({"message": "delegated"})
@@ -725,7 +725,7 @@ class TestArticle7_ResponseFormat:
         """Module that imports ok but not err fails."""
         db_code = textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok
             def main():
                 ok({"message": "no err imported"})
@@ -828,7 +828,7 @@ class TestArticle10_SecurityScan:
         """Module using parameterized queries (not f-strings) passes."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def query(conn, company_id):
                 rows = conn.execute("SELECT * FROM item WHERE company_id = ?", (company_id,)).fetchall()
@@ -842,7 +842,7 @@ class TestArticle10_SecurityScan:
         """Module with password = 'secret123' in code is caught."""
         db_code = textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             password = "SuperSecret123!"
             def main():
@@ -858,7 +858,7 @@ class TestArticle10_SecurityScan:
         """Module with API_KEY = 'sk-xxx...' in code is caught."""
         db_code = textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             api_key = "sk-1234567890abcdef"
             def main():
@@ -881,7 +881,7 @@ class TestArticle10_SecurityScan:
         """SQL via f-string is caught."""
         db_code = textwrap.dedent('''\
             import os, sys, sqlite3
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def bad_query(conn, name):
                 conn.execute(f"SELECT * FROM item WHERE name = '{name}'")
@@ -1094,7 +1094,7 @@ class TestArticle19_InModuleModificationScope:
         import json
         path = _make_valid_module(tmp_path, "goodmanclaw", db_query_code=textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def handle_add_widget(args):
                 # Source: ERPClaw CRUD pattern
@@ -1201,7 +1201,7 @@ class TestArticle20_ResearchProvenance:
         import json
         path = _make_valid_module(tmp_path, "sourced20claw", db_query_code=textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def handle_calc_overtime(args):
                 # Source: FLSA 29 USC 207 — overtime at 1.5x for hours > 40/week
@@ -1231,7 +1231,7 @@ class TestArticle20_ResearchProvenance:
         import json
         path = _make_valid_module(tmp_path, "nosource20claw", db_query_code=textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def handle_calc_overtime(args):
                 hours = args.get("hours", 0)
@@ -1274,7 +1274,7 @@ class TestArticle20_ResearchProvenance:
         import json
         path = _make_valid_module(tmp_path, "mixed20claw", db_query_code=textwrap.dedent('''\
             import os, sys
-            sys.path.insert(0, os.path.expanduser("~/.openclaw/erpclaw/lib"))
+            sys.path.insert(0, os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "lib"))
             from erpclaw_lib.response import ok, err
             def handle_good_action(args):
                 # Source: GAAP ASC 606 revenue recognition

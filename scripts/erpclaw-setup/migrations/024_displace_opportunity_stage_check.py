@@ -48,7 +48,7 @@ import os
 import sqlite3
 import uuid
 
-DEFAULT_DB_PATH = os.path.expanduser("~/.openclaw/erpclaw/data.sqlite")
+DEFAULT_DB_PATH = os.path.join(os.path.expanduser(os.environ.get("ERPCLAW_HOME", "~/.openclaw/erpclaw")), "data.sqlite")
 
 # Default "Standard Sales" pipeline: the existing 7 stages, in order. The terminal
 # flags + default probability mirror the legacy hardcoded semantics. Kept in sync
