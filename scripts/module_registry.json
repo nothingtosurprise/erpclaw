@@ -440,8 +440,8 @@
       "files_sha256": {
         "CHANGELOG.md": "b8ed53f25c7fcb310d20109b8b5bea96e9a74588e020cadc63c927b285a2ec64",
         "LICENSE.txt": "7bb0c0eb1db8b40884cd154315e459fadacd2bff10190df3516639282608ed0c",
-        "README.md": "abba315664c866a0eeac944e0c6b1bbd0ea46bb521d358f1612bda29e1e9c284",
-        "SKILL.md": "852cfb9df3c6e98bd4ea26a2ce0371bfea9f4000d48d325fd723b56b9d382bc9",
+        "README.md": "e3e9a18fa60b89a40e73010ac036fcf62cb356f0e5a26a90f06929b4e8445605",
+        "SKILL.md": "1834cd2ac1436af6fdb7fd0dc16048d5b93f5836e63c8a8b1365903f69d5a7f4",
         "UI.yaml": "7c7062cdbc7877a3daa5b22dc6b4e296ce0b1dad7cdf615fd0ddcf0f278b581c",
         "assets/demo.svg": "a54a4d95a3bc98d4408c9f952899f1f37dd22b7a5d18b4b5a8b17a79acaa784f",
         "assets/logo.svg": "dd36f8427bfaa377aad2d037bd97d502055428477fe6f90afabb3a54ca0496da",
@@ -468,7 +468,7 @@
         "scripts/erpclaw-os/references/pattern_catalog.md": "f5f0976f487124d7dca02c9196b51f46a29e8190b37988ff167820897075ea05",
         "scripts/erpclaw-os/schema_diff.py": "57d1218cd78c5546e4f8f35dd072be62534e94b0dce324317894b128e1c04780",
         "scripts/erpclaw-os/schema_migrator.py": "b567aa4aeb1af1f28f4ee2c1238e0eb0011b1d7c7f174aee463d2eff0683671a",
-        "scripts/erpclaw-os/validate_module.py": "654b7c6dcf1a313ae995cd0ce565960a6a3b21ca426f16d5f9ba42f270958907",
+        "scripts/erpclaw-os/validate_module.py": "b727f7880dde44004b88da64f5e73d78d3edf0fe97fa5403fd5986d95176a862",
         "scripts/erpclaw-payments/db_query.py": "89b2654a54ee28e1d4107f6608630bc70993cb40d010c3cbcd2c6a71c29fddd5",
         "scripts/erpclaw-payroll/db_query.py": "505793936d35ec39d1c73f2ff3c3e764739111bfdf2b7a1f30e2fa45f8afe535",
         "scripts/erpclaw-reports/db_query.py": "2be8b82e3da2ca9fc944c6ddb18038a38f8deae4df0fdb2f50475a450848a45b",
@@ -478,7 +478,7 @@
         "scripts/erpclaw-setup/assets/default_uom.json": "baca02db1311acee08226ec22dc2ec98f2306c30f7cfa6cd46840b0711b83259",
         "scripts/erpclaw-setup/assets/us_gaap.json": "8f894ae401adeedafe2840213553b9aed2df0b00409619fe96440f6460862670",
         "scripts/erpclaw-setup/db_query.py": "a5883ff78ec0143834a2f320c6288a8da9f74294a3c7ba0f6345d102cffe45e8",
-        "scripts/erpclaw-setup/init_schema.py": "58a09ff12f446a7487355e66407b35a5223eafeeefa1da4b1177a3f8f4c5aba8",
+        "scripts/erpclaw-setup/init_schema.py": "06cf9ed13c6de012a30661785c6db7b950d7ff5f90f6c867d58c179c178d9229",
         "scripts/erpclaw-setup/lib/erpclaw_lib/__init__.py": "a8461da36a0e441b06a747566bc8464371237bb35d0ca9a3940d90d74b5c17e9",
         "scripts/erpclaw-setup/lib/erpclaw_lib/args.py": "2c8da57e7c7307ae19fc011fc44e06915e431dd5a24f18e45f2a3e877b5294eb",
         "scripts/erpclaw-setup/lib/erpclaw_lib/audit.py": "5e81e0f70868f4f6a15a7035ce982c95bac1dbe11913b303fe7f8d1ad0cc7a1a",
@@ -486,13 +486,14 @@
         "scripts/erpclaw-setup/lib/erpclaw_lib/credentials.py": "ab5daed77c095df791ab0ecc21536d34a60c6e6bf26e16760a69336be8d2d577",
         "scripts/erpclaw-setup/lib/erpclaw_lib/cross_skill.py": "87ef785d4c53c5b918c0340f181c9dc8c224660273ba5ab3d2c1bbf272cdc2c0",
         "scripts/erpclaw-setup/lib/erpclaw_lib/crypto.py": "1b13eab4258da0d97efe69d6d1f8d616e98b4ef91e2debdb38f714ab49f70c09",
-        "scripts/erpclaw-setup/lib/erpclaw_lib/csv_import.py": "63f8a632e00516fa4a09b6213f89a7b732121d713ccdbe971c56d90f8b1c093c",
+        "scripts/erpclaw-setup/lib/erpclaw_lib/csv_export.py": "23395894e5219441bf7a9513aa5b624e6a6543e9d739a38869c378c05b8d71a7",
+        "scripts/erpclaw-setup/lib/erpclaw_lib/csv_import.py": "3a86c97411b6137bcefcf5601ed374b8ecd965060ae5027216b8640d00215ac2",
         "scripts/erpclaw-setup/lib/erpclaw_lib/custom_fields.py": "fde8a8f4bef598c832eb11343755c2163b07ed4368acc37cd77afe8bf37ba593",
         "scripts/erpclaw-setup/lib/erpclaw_lib/cwip_posting.py": "e846a3182cef12bfb6d30e83adb068f9fd4f620c671013f744a33c7e7efacd47",
         "scripts/erpclaw-setup/lib/erpclaw_lib/datetime_utils.py": "8c115d2472aa93aab5698bfec91f5b393c58242ab56642ae21411d6fe3c93206",
         "scripts/erpclaw-setup/lib/erpclaw_lib/db.py": "7a997c23642f03ad44411a29621894c6b023edc38ddbb94d70008519a9637915",
         "scripts/erpclaw-setup/lib/erpclaw_lib/decimal_utils.py": "410461611c9d8932888ce61bfcf17bd5cbd6849c4bafb90fd03b0e3990c466ee",
-        "scripts/erpclaw-setup/lib/erpclaw_lib/dependencies.py": "22a54f940aa311e9bae025cc431bd7c74fff49787f5b3a6e9e154861b499c7b2",
+        "scripts/erpclaw-setup/lib/erpclaw_lib/dependencies.py": "49e3dd5eba362c8559f3e223620e5ff1a88c59be31416e8b6e30008d20e696f4",
         "scripts/erpclaw-setup/lib/erpclaw_lib/encrypted_columns.py": "d33feff5fd498e773b17ed800704441694097a6e9d76ef312bd7ba1456c40b52",
         "scripts/erpclaw-setup/lib/erpclaw_lib/fx_posting.py": "f83c498a2bf33fa9c621172333aaa632f671c1ad41f9bf2c30dc30687b2ddd02",
         "scripts/erpclaw-setup/lib/erpclaw_lib/gl_invariants.py": "5b40eabb19d7e7cee94e588cbdecaff667ef726851b1f71081f4e222f85c2991",
@@ -545,6 +546,8 @@
         "scripts/erpclaw-setup/migrations/020_bank_statement_import.py": "5d1dc27b8979cd27fc9e97cf563f472195011c879f4e180afbb299b5149ee637",
         "scripts/erpclaw-setup/migrations/021_cwip_cost_accumulation.py": "f696352b913b1d46e2e3cf7de47aff345bb2b5b423e0dd543c862857f5bc4b28",
         "scripts/erpclaw-setup/migrations/022_cwip_invoice_je_hooks.py": "78f0040d1991d884b9b6e55e845351903daa3c5edb54ee8b97c15fa0722beff9",
+        "scripts/erpclaw-setup/migrations/023_crm_contact_fks.py": "e2a6d9ccb092a86511d892ce4b60c724638330fad54e1d1b8087fdeca281041e",
+        "scripts/erpclaw-setup/migrations/024_displace_opportunity_stage_check.py": "b1c683abae5fd3e04438bf0ca162d683cb61e7ced19976d874c9bb6bcb967adf",
         "scripts/erpclaw-tax/db_query.py": "cf8aff295572e1d3ef025da0a187dcbe1618a04d185ec9fac880ecf60071e13c",
         "scripts/install_bin.py": "b1cf400544d5600228be8550da25980ca011743f16da5b81b12b8276aa5cbbab",
         "scripts/module_manager.py": "a8f46372e91f35462ffbf053e7d4eb78fd4d8f42a7ed99cc0a4dba960e807b6a",
@@ -573,7 +576,7 @@
         "user",
         "rbac"
       ],
-      "version": "4.8.0"
+      "version": "4.9.0"
     },
     "erpclaw-alerts": {
       "action_count": 21,
@@ -781,10 +784,14 @@
       "display_name": "ERPClaw Growth",
       "files_sha256": {
         "LICENSE.txt": "7bb0c0eb1db8b40884cd154315e459fadacd2bff10190df3516639282608ed0c",
-        "SKILL.md": "de8f5c33923000f8cfc961d4a2eb00b87ea7c812a7827eb8180a9958dcf13d75",
+        "SKILL.md": "7131f57f94455feb67307f398bdea5e03dff07198a2d7d34e174ff72fb4cc073",
         "UI.yaml": "3b556d439a056d38e5e1aa5e28ff0331fd0e945141108f254dd137c2863b0521",
-        "init_db.py": "66653c433dda3df085019a2a2007483f2de716fb1be155974481f8dda5fefdcb",
-        "scripts/db_query.py": "e35bec34129efc5628642bc634d65cb8cdc1593b62674f431891b276d328a0ad",
+        "init_db.py": "aa9d0f0d62d815b3f8494d9a8ef7ac9259b406a9b60aeb9991ae68c1ce03e4c9",
+        "migrations/001_crm_contact_company_tables.py": "2b27f677ea42aa0bf28ec7d60d221a89de45ee61154489fbb3d2e871f17e685c",
+        "migrations/002_crm_tasks.py": "a992ba019bccc2a541b94ccc6abe38bc4c0258c76d6ab4d0612eff348a84efab",
+        "migrations/003_crm_pipelines.py": "4c5b9c6f0925444677eac07f2d937ceef4d73fa7bcaf576d1b2277e0655edb76",
+        "migrations/004_crm_saved_view.py": "00b8e8ca19d3e687d06dfed9bf6b70bb6cb1450d5ec677f386534cb012eb8019",
+        "scripts/db_query.py": "5f4c58b600119874f2669f7aabf5a838b719a02bd6da054043d43c61181a0488",
         "scripts/erpclaw-ai-engine/db_query.py": "0fadc73e1ee04555c0c29b46017369ce2e6f8d9b0883a8974363ad11612ac5b6",
         "scripts/erpclaw-analytics/db_query.py": "c870624deb4ca6fc840d807549a66740e7760251e3b3c628d094c0271278b8c7",
         "scripts/erpclaw-crm-adv/automation.py": "95d5437ed95ff738a009b4121af11916d79e13ff0de2e02c3001069e3a11e12e",
@@ -793,7 +800,14 @@
         "scripts/erpclaw-crm-adv/db_query.py": "5e137e1098515f13328affbf7e766976b9f2e90aacfa97df2e1a6310d29fba25",
         "scripts/erpclaw-crm-adv/reports.py": "df00b86560abf07f8a443d65be9e7c3d52d1e47c606add2e0a12e2e57bf1a4a9",
         "scripts/erpclaw-crm-adv/territories.py": "e2c216add9274e98f8a90bbf277a702444eb8b268f5698fb668b67c313e62680",
-        "scripts/erpclaw-crm/db_query.py": "8d84447cd089044f21f8b54b8a8be7b3a60bc448dc99cf4755d30a06bbc506e1"
+        "scripts/erpclaw-crm/backfill_crm_contact_fks.py": "1c9685f3f9e85728525e5180a804651192c9495a5f9577c4e0fdc964e802dc6b",
+        "scripts/erpclaw-crm/db_query.py": "ddb423a5dc93f64de517017b65b0944bd19f4770bd8edd970ed2e20c5e7ea0f1",
+        "scripts/erpclaw-crm/references/crm_contacts.md": "23dd4a02945bbe2d4ca7b3be68c3b5f319e7061066889ff6c60b336a37d56044",
+        "scripts/erpclaw-crm/references/crm_csv_import_export.md": "bc46082bb1858d92b9601e1c27f319fed72d73eb5dda4f26f0293b3aea750b77",
+        "scripts/erpclaw-crm/references/crm_global_search.md": "3e8d23707762a86ec13b1f4603e3d68faf23e65e307a7ba07ce2781a2a135fc8",
+        "scripts/erpclaw-crm/references/crm_pipelines.md": "2c765d0e9e9938e0713011d83c231d84f36054e0fca0f7c302ad89fa980bb1b7",
+        "scripts/erpclaw-crm/references/crm_saved_views.md": "f9e1c50d12f938d3b384810603fd2040697daec498f4ece306eaf6e904fe4aab",
+        "scripts/erpclaw-crm/references/crm_tasks.md": "08f3b6ad709c0038e1d4850bb948009b7f61512ee2bfa3d03682e3d9714da817"
       },
       "github": "avansaber/erpclaw-addons",
       "has_init_db": true,
@@ -820,7 +834,7 @@
         "email-campaigns",
         "web-tracking"
       ],
-      "version": "2.1.0"
+      "version": "2.6.0"
     },
     "erpclaw-integrations": {
       "action_count": 80,
@@ -1905,8 +1919,8 @@
       "version": "1.0.0"
     }
   },
-  "registry_version": 57,
-  "signed_at": "2026-06-11T08:36:01Z",
+  "registry_version": 60,
+  "signed_at": "2026-06-16T04:56:52Z",
   "total_actions": 3169,
-  "version": "4.8.0"
+  "version": "4.9.0"
 }

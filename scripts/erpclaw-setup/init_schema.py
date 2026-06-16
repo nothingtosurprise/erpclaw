@@ -804,6 +804,8 @@ CREATE TABLE IF NOT EXISTS customer (
     phone           TEXT,
     status          TEXT NOT NULL DEFAULT 'active'
                     CHECK(status IN ('active','inactive','blocked')),
+    -- Wave 1B F1 (ADR-0023): nullable opaque back-reference to addon-owned crm_company.
+    crm_company_id  TEXT,
     company_id      TEXT NOT NULL REFERENCES company(id) ON DELETE RESTRICT,
     created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at      TEXT DEFAULT CURRENT_TIMESTAMP
@@ -2886,6 +2888,11 @@ CREATE TABLE IF NOT EXISTS lead (
     converted_to_opportunity TEXT,
     assigned_to     TEXT,
     notes           TEXT,
+    -- Wave 1B F1 (ADR-0023): nullable opaque references to addon-owned crm_contact/crm_company.
+    -- Plain TEXT (no SQL FK): SQLite resolves a REFERENCES target at INSERT even for NULL,
+    -- which would break add-lead on a foundation-only install. Growth is the sole writer.
+    crm_contact_id  TEXT,
+    crm_company_id  TEXT,
     company_id      TEXT NOT NULL REFERENCES company(id) ON DELETE RESTRICT,
     created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at      TEXT DEFAULT CURRENT_TIMESTAMP
@@ -2908,15 +2915,19 @@ CREATE TABLE IF NOT EXISTS opportunity (
     probability     TEXT NOT NULL DEFAULT '0',
     expected_revenue TEXT NOT NULL DEFAULT '0',
     weighted_revenue TEXT NOT NULL DEFAULT '0',
-    stage           TEXT NOT NULL DEFAULT 'new'
-                    CHECK(stage IN (
-                        'new','contacted','qualified','proposal_sent',
-                        'negotiation','won','lost'
-                    )),
+    -- Wave 1B F3: the hardcoded 7-value stage CHECK was DROPPED (customizable
+    -- pipelines); app-side VALID_OPP_STAGES (erpclaw-crm/db_query.py) is the
+    -- text-path enforcement. Legacy `stage` text stays for backward-compat.
+    stage           TEXT NOT NULL DEFAULT 'new',
     lost_reason     TEXT,
     assigned_to     TEXT,
     next_follow_up_date TEXT,
     quotation_id    TEXT,
+    -- Wave 1B F1 (ADR-0023): nullable opaque references to addon-owned crm_contact/crm_company.
+    crm_contact_id  TEXT,
+    crm_company_id  TEXT,
+    -- Wave 1B F3 (ADR-0023): nullable opaque reference to addon-owned crm_pipeline_stage.
+    pipeline_stage_id TEXT,
     company_id      TEXT NOT NULL REFERENCES company(id) ON DELETE RESTRICT,
     created_at      TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at      TEXT DEFAULT CURRENT_TIMESTAMP
@@ -2925,6 +2936,7 @@ CREATE TABLE IF NOT EXISTS opportunity (
 CREATE INDEX IF NOT EXISTS idx_opportunity_stage ON opportunity(stage);
 CREATE INDEX IF NOT EXISTS idx_opportunity_company ON opportunity(company_id);
 CREATE INDEX IF NOT EXISTS idx_opportunity_customer ON opportunity(customer_id);
+CREATE INDEX IF NOT EXISTS idx_opportunity_pipeline_stage ON opportunity(pipeline_stage_id);
 
 CREATE TABLE IF NOT EXISTS campaign (
     id              TEXT PRIMARY KEY,
@@ -2962,6 +2974,8 @@ CREATE TABLE IF NOT EXISTS crm_activity (
     lead_id         TEXT REFERENCES lead(id) ON DELETE RESTRICT,
     opportunity_id  TEXT REFERENCES opportunity(id) ON DELETE RESTRICT,
     customer_id     TEXT REFERENCES customer(id) ON DELETE RESTRICT,
+    -- Wave 1B F1 (ADR-0023): nullable opaque reference to addon-owned crm_contact (4th parent).
+    crm_contact_id  TEXT,
     created_by      TEXT,
     next_action_date TEXT,
     created_at      TEXT DEFAULT CURRENT_TIMESTAMP

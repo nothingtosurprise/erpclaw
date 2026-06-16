@@ -1,10 +1,10 @@
 ---
 name: erpclaw
-version: 4.8.0
+version: 4.9.0
 description: >
   AI-native ERP system. Full accounting, invoicing, inventory, purchasing,
   tax, billing, HR, payroll, advanced accounting (ASC 606/842, intercompany, consolidation),
-  and financial reporting (including P&L / trial balance / spend grouped by department, project, cost center, location, or fund). 483 actions across 14 domains, 45 optional expansion modules (user-approved install from GitHub).
+  and financial reporting (including P&L / trial balance / spend grouped by department, project, cost center, location, or fund). 505 actions across 14 domains, 45 optional expansion modules (user-approved install from GitHub).
   Double-entry GL, immutable audit trail, US GAAP compliant. Licensed under GNU GPL v3 (the marketplace "MIT-0" badge is a ClawHub platform default; the LICENSE.txt in the bundle is GPL v3).
 author: AvanSaber
 homepage: https://github.com/avansaber/erpclaw
@@ -25,10 +25,11 @@ metadata: {"openclaw":{"type":"executable","install":{"post":"python3 scripts/er
 The ERPClaw database is the single source of truth for every business entity — companies, customers, suppliers, items, invoices, bills, payments, and the general ledger. Before answering what exists or acting on an entity, look it up in the ERP and ground your reply in that result:
 
 - "Which companies/customers/items do we have?" → query it (`list-companies`, `list-customers`, `list-items`). Never answer from memory, earlier conversations, workspace files, or any other context.
-- When a user names a product loosely or in plural ("20 Brake Pad Sets"), call `resolve-item --name "<their words>"` first; use the single match, or ask the user to choose when `multiple_matches` is true, before invoicing/ordering.
-- Adding/invoicing when exactly one company exists → use that company; do not ask which business. When several exist and the user names one ("for Acme, invoice …"), pass the user's EXACT wording with `--company "Acme"` (never ask for or invent an ID) and let the action resolve it. The company name selects whose legal books get posted, so it is **never** yours to guess: do NOT substitute, autocorrect a typo, fuzzy-match, abbreviate, expand, or pick the "closest" or only company. Exact match only: "Acmee" is not "Acme Widgets", and "Acme" is not "Acme Widgets". Read `list-companies` to ground, NOT to choose a near-match.
+- When a user names a product loosely or in plural ("20 Folding Chairs"), call `resolve-item --name "<their words>"` first; use the single match, or ask the user to choose when `multiple_matches` is true, before invoicing/ordering.
+- Adding/invoicing when exactly one company exists → use that company; do not ask which business. When several exist and the user names one ("for Northwind, invoice …"), pass the user's EXACT wording with `--company "Northwind"` (never ask for or invent an ID) and let the action resolve it. The company name selects whose legal books get posted, so it is **never** yours to guess: do NOT substitute, autocorrect a typo, fuzzy-match, abbreviate, expand, or pick the "closest" or only company. Exact match only: "Northwynd" is not "Northwind Traders", and "Northwind" is not "Northwind Traders". Read `list-companies` to ground, NOT to choose a near-match.
 - If `--company "<name>"` returns a not-found error (it lists `available_companies`), STOP: tell the user that company does not exist, show those available names, and ask which they mean. Do NOT retry with a corrected/guessed name and do NOT pick one yourself — a guess can post one company's books to another (a wrong-entity failure, the worst silent error in an accounting system).
 - Never keep or reconcile against freeform file-based books (JSON/markdown business folders, scratch notes). They are not the ledger and may be stale. The ERP database is the only authoritative record. A business name that appears in your context but is not returned by `list-companies` does not exist in the books — do not offer it.
+- **Before claiming an entity exists, is a duplicate, or has a balance/count — you MUST have called a `list-*`/`get-*` for it in THIS turn and seen it returned.** This is mandatory and has no exception. Asked to add or create something (a new customer, a received shipment of stock, a new supplier)? Do not refuse it as an existing duplicate from memory: call the relevant lookup (e.g. `list-customers`) this turn first; if it returns no match, CREATE it — the default for an add/create request is to act, not to refuse. A name, number, or "already set up" feeling from earlier in the chat, your workspace context, or training is NOT evidence it is in the books; if you have not run the lookup this turn, you do not know it exists. Conversely, when the ERP DOES return a document another session created, treat it as authoritative and act on it — do not refuse because a session was reset or your notes say the data is stale. The ERP query is the only truth; your memory is not.
 
 ## Speaking to the user
 
@@ -95,9 +96,13 @@ python3 {baseDir}/scripts/db_query.py --action setup-chart-of-accounts --company
 
 ## Runtime gate
 
-High-impact actions require the `--user-confirmed` flag on every invocation. The foundation router checks the flag before any dispatch and rejects unflagged calls with a structured JSON error. Read-only actions (verbs `list`, `get`, reports) run without the flag.
+High-impact actions require the `--user-confirmed` flag on every invocation; the foundation router rejects unflagged calls with a structured JSON error. Read-only actions (`list`, `get`, reports) run without the flag.
 
-## All 489 Actions
+**The flag confirms consent the user already gave — it is not a request to pause.** When the user has clearly asked for an action ("send the invoice", "record the payment", "post that entry"), pass `--user-confirmed` in that same call and act. Do NOT draft the steps and then ask "want me to submit?" — that re-asks for a yes you already have, and nothing is recorded. This is the default for every routine, reversible action: `submit-*`, `add-*`, `create-*`, `approve-*`.
+
+Re-confirm a second time ONLY for the small destructive set, where a mistake is hard or impossible to undo: closing the fiscal year (`close-fiscal-year`), restoring from backup (`restore-database`), installing a module (`install-module`), reconciling foundation files (`rollback-foundation`), and generating a bank-payment file (`generate-nacha-file`). For these, state plainly what will happen and get an explicit yes before passing the flag.
+
+## All 505 Actions
 
 ### Setup & Admin (50)
 | Action | Description |
@@ -267,17 +272,7 @@ High-impact actions require the `--user-confirmed` flag on every invocation. The
 
 > **Module authoring + variant analysis (developer tooling):** module generation, in-module feature injection, sandboxed test execution, deploy pipeline, variant analysis, gap detection, heartbeat analysis, semantic checks, and the OS-engine status command live in the optional `erpclaw-os-engine` addon (~30 actions, all `os-` prefixed). The addon is GitHub-only and not installed by default. Install via `module_manager.py --action install-module --module-name erpclaw-os-engine`. Foundation does not run module-generation or auto-deploy code paths.
 
-**Always ask the user to confirm before doing any of the following.** Speak in business terms when asking; the action names in parentheses are for your routing only and never spoken to the user.
-
-- Set up a company (`setup-company`)
-- Run onboarding (`onboard`)
-- Install, remove, or update a module (`install-module` / `remove-module` / `update-modules`)
-- Apply or roll back schema changes (`schema-apply` / `schema-rollback`)
-- Submit, cancel, approve, or reject any document (`submit-*` / `cancel-*` / `approve-*` / `reject-*`)
-- Run consolidation or intercompany elimination (`run-consolidation` / `run-elimination`)
-- Restore the database (`restore-database`)
-- Close the fiscal year (`close-fiscal-year`)
-- Force-reinitialize the database (`initialize-database --force`)
+**Confirmation follows the two-class protocol in `## Runtime gate`:** for the destructive set (`close-fiscal-year`, `restore-database`, `install-module`, `rollback-foundation`, `generate-nacha-file`, plus `initialize-database --force` and `remove-module`/`schema-rollback`) get a genuine second yes before acting; for routine reversible work (`submit-*` / `cancel-*` / `approve-*` / `reject-*`, `setup-company`, `onboard`, `run-consolidation`/`run-elimination`) pass `--user-confirmed` on a clear request without re-asking. Speak in business terms; the action names are routing-only and never spoken to the user.
 
 ## Optional scheduling (background email workers)
 
